@@ -6,6 +6,7 @@
 
 <br />
 <div align="center">
+  <img src="icons/icon.png" alt="EasyAndroid" width="96" height="96">
   <h3 align="center">EasyAndroid</h3>
 
   <p align="center">

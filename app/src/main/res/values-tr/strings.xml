@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_apps">Uygulama</string>
+    <string name="tab_backups">Yedekler</string>
+    <string name="tab_debloat">Debloat</string>
+    <string name="tab_system">Sistem</string>
+    <string name="tab_settings">Ayarlar</string>
+
+    <string name="ok">Tamam</string>
+    <string name="cancel">İptal</string>
+    <string name="close">Kapat</string>
+    <string name="retry">Yeniden dene</string>
+    <string name="apply">Uygula</string>
+    <string name="apply_count">Uygula (%1$d)</string>
+    <string name="delete">Sil</string>
+    <string name="refresh">Yenile</string>
+    <string name="reset">Sıfırla</string>
+    <string name="search">Ara</string>
+    <string name="clear">Temizle</string>
+    <string name="all">Tümü</string>
+    <string name="error">Hata</string>
+    <string name="select_all">Tümünü seç</string>
+    <string name="select_none">Seçimi kaldır</string>
+    <string name="select_newest">En yenileri seç</string>
+    <string name="user_apps">Kullanıcı</string>
+    <string name="system_apps">Sistem</string>
+
+    <string name="no_root_title">Root erişimi gerekli</string>
+    <string name="no_root_text">EasyAndroid uygulamaları root ile yedekler ve geri yükler. Magisk, KernelSU veya kullandığınız root yöneticisinden izin verin, sonra yeniden deneyin.</string>
+
+    <string name="back_up">Yedekle</string>
+    <string name="back_up_count">Yedekle (%1$d)</string>
+    <string name="restore">Geri yükle</string>
+    <string name="restore_count">Geri yükle (%1$d)</string>
+    <string name="export">Dışa aktar</string>
+    <string name="import_backup">.easybckp içe aktar</string>
+    <string name="no_backups">Henüz yedek yok.</string>
+    <string name="incomplete">Eksik yedek</string>
+
+    <string name="part_app">Uygulama (APK)</string>
+    <string name="part_data">Veri</string>
+    <string name="part_data_hint">Uygulama içindeki hesaplar, ayarlar ve dosyalar. Önbellek alınmaz.</string>
+    <string name="part_obb">OBB</string>
+    <string name="part_external">Harici veri</string>
+    <string name="part_external_hint">Android/data klasörü. Çok büyük olabilir.</string>
+    <string name="part_all_data">Yedekteki tüm veriler</string>
+    <string name="part_permissions">İzinler</string>
+    <string name="part_permissions_hint">Çalışma zamanı izinleri, özel erişim ve pil istisnası.</string>
+    <string name="keystore_hint">Verisini bu telefona bağlayan uygulamalar (bankacılık, doğrulayıcılar) yeniden giriş isteyebilir.</string>
+
+    <string name="compression">Sıkıştırma</string>
+    <string name="compression_none">Yok</string>
+    <string name="compression_none_hint">Hızlıdır ve PC\'de EasyADB ile geri yüklenebilir. Daha çok yer kaplar.</string>
+    <string name="compression_zstd">zstd</string>
+    <string name="compression_zstd_hint">Daha az yer kaplar ama yavaştır. EasyADB henüz okuyamaz.</string>
+    <string name="force_stop_warning">Verilerin tutarlı olması için seçili uygulamalar yedeklenirken kapatılacak.</string>
+
+    <string name="already_installed">%1$s zaten kurulu</string>
+    <string name="installed_version">Kurulu: %1$s</string>
+    <string name="backup_version">Yedek: %1$s, %2$s</string>
+    <string name="overwrite">Üzerine yaz</string>
+    <string name="skip">Atla</string>
+    <string name="overwrite_warning">Üzerine yazmak uygulamayı ve şu anki verisini yedektekiyle değiştirir. Geri alınamaz.</string>
+    <string name="for_all">%1$d uygulamanın tümüne uygula</string>
+
+    <string name="delete_title">%1$d yedek silinsin mi?</string>
+    <string name="delete_warning">Bu işlem geri alınamaz.</string>
+
+    <string name="removal_recommended">Önerilen</string>
+    <string name="removal_advanced">İleri</string>
+    <string name="removal_expert">Uzman</string>
+    <string name="removal_unsafe">Güvensiz</string>
+    <string name="removal_unlisted">Listede yok</string>
+    <string name="show_removed">Kaldırılanlar</string>
+    <string name="state_disabled">devre dışı</string>
+    <string name="state_uninstalled">kaldırılmış</string>
+    <string name="selected_count">%1$d seçili</string>
+    <string name="debloat_disable_count">Devre dışı bırak (%1$d)</string>
+    <string name="debloat_uninstall_count">Kaldır (%1$d)</string>
+    <string name="bring_back_count">Geri getir (%1$d)</string>
+    <string name="debloat_profile">Debloat profili</string>
+    <string name="debloat_profile_hint">Kaldırılan ve devre dışı uygulamaları bir dosya olarak kaydeder; aynı temizlik yeni ROM\'da tekrar uygulanabilir.</string>
+    <string name="profile_save_state">Kaldırılanları profil olarak kaydet</string>
+    <string name="profile_load">Profil yükle</string>
+    <string name="no_description">Bu paket UAD-NG listesinde yok. Dikkatli olun.</string>
+    <string name="needed_by">Şunlar için gerekli</string>
+    <string name="debloat_confirm">%1$d paket değiştirilsin mi?</string>
+    <string name="debloat_commands">Şu komutlar çalıştırılacak:</string>
+    <string name="uninstall_warning">Yanlış sistem uygulamasını kaldırmak telefonun açılmasını engelleyebilir. Önce yedek almanız önerilir.</string>
+    <string name="uninstall_user_warning">Bunlar sistem uygulaması değil, yeniden indirilmeleri gerekir: %1$s</string>
+
+    <string name="wireless_title">Kablosuz hata ayıklama</string>
+    <string name="wireless_switch">Kablosuz hata ayıklama</string>
+    <string name="wireless_on">Açık. Kapatıp açmak süren eşleştirmeyi iptal eder.</string>
+    <string name="wireless_off">Kapalı</string>
+    <string name="wireless_address">Bağlantı adresi</string>
+    <string name="wireless_port_unknown">%1$s (port henüz bulunamadı)</string>
+    <string name="wireless_no_wifi">Wi-Fi\'ye bağlı değil</string>
+    <string name="wireless_qr">QR kodu ile eşleştir</string>
+    <string name="wireless_code">Eşleştirme koduyla eşleştir</string>
+    <string name="wireless_turn_on">Eşleştirmek için kablosuz hata ayıklamayı açın.</string>
+    <string name="wireless_help">EasyADB\'de Kablosuz sekmesini açın. QR için ilk düğmeye dokunup PC\'deki QR\'ı okutun. Kod için ikinci düğmeye dokunup burada görünen kodu EasyADB\'ye yazın. Eşleştikten sonra yukarıdaki adrese bağlanın.</string>
+    <string name="copy">Kopyala</string>
+
+    <string name="system_create">Yeni sistem yedeği</string>
+    <string name="system_hint">Yeni ROM\'da uygulamalar dışında kaybolanlar. İzinler, özel erişim ve pil istisnaları her uygulamayla birlikte kaydedilir.</string>
+    <string name="system_settings">Sistem ayarları</string>
+    <string name="system_roles">Varsayılan uygulamalar</string>
+    <string name="system_wifi">Wi-Fi ağları ve şifreleri</string>
+    <string name="system_wifi_hint">Şifreler yedek klasöründe şifrelenmeden saklanır. Depolama erişimi olan uygulamalar okuyabilir.</string>
+    <string name="system_saved">Kayıtlı sistem yedekleri</string>
+    <string name="system_diff">Geri yüklenecekleri seçin</string>
+    <string name="system_diff_hint">Yalnızca farklar listelenir. Her ROM\'da aynı anlama gelen ayarlar seçilidir; diğerleri eski ROM\'a özel olabilir.</string>
+    <string name="system_no_diff">Bu yedekle hiçbir fark yok.</string>
+    <string name="system_apply_warning">Seçili ayarlar değiştirilecek. Başka bir ROM\'un ayarları sorun çıkarabilir.</string>
+    <string name="wifi_item">Wi-Fi: %1$s</string>
+    <string name="change">%1$s yerine %2$s</string>
+
+    <string name="backup_folder">Yedek klasörü</string>
+    <string name="backup_folder_hint">Telefonu biçimlendirmeden önce bu klasörü PC\'ye kopyalayın. EasyADB doğrudan açabilir.</string>
+    <string name="choose_folder">Klasör seç</string>
+    <string name="folder_unsupported">Bu klasörün telefonda bir yolu yok. Dahili depolamada veya SD kartta bir klasör seçin.</string>
+    <string name="language">Dil</string>
+    <string name="change_language">Dili değiştir</string>
+    <string name="language_system">Sistem dilini kullanır.</string>
+    <string name="about">Hakkında</string>
+    <string name="about_text">GPL-3.0. Paket açıklamaları Universal Android Debloater Next Generation\'dan alınmıştır.</string>
+
+    <string name="channel_jobs">Çalışan işlemler</string>
+    <string name="job_backup">Yedekleme</string>
+    <string name="job_restore">Geri yükleme</string>
+    <string name="job_export">Dışa aktarma</string>
+    <string name="job_import">İçe aktarma</string>
+    <string name="job_debloat">Debloat</string>
+    <string name="job_system_backup">Sistem yedeği</string>
+    <string name="job_system_restore">Sistem geri yükleme</string>
+    <string name="job_position">%1$d / %2$d: %3$s</string>
+    <string name="job_summary">%2$d işlemden %1$d tamamlandı, %3$d başarısız</string>
+    <string name="result_line">%1$s: %2$s</string>
+    <string name="result_ok">tamamlandı</string>
+    <string name="result_warning">uyarılarla tamamlandı</string>
+    <string name="result_failed">başarısız</string>
+    <string name="permissions_restored">%1$s izin geri verildi</string>
+
+    <string name="stage_prepare">Hazırlanıyor</string>
+    <string name="stage_apk">Uygulama</string>
+    <string name="stage_obb">OBB</string>
+    <string name="stage_data">Veri</string>
+    <string name="stage_verify">Doğrulanıyor</string>
+    <string name="stage_install">Kuruluyor</string>
+    <string name="stage_permissions">İzinler</string>
+    <string name="stage_debloat">Paketler değiştiriliyor</string>
+    <string name="stage_settings">Sistem ayarları</string>
+
+    <string name="note_data_failed">Veri işlenemedi: %1$s</string>
+    <string name="note_device_data_failed">Cihaz korumalı veri işlenemedi: %1$s</string>
+    <string name="note_external_data_failed">Harici veri işlenemedi: %1$s</string>
+    <string name="note_obb_failed">OBB işlenemedi: %1$s</string>
+    <string name="note_permissions_partial">Geri verilen izinler: %1$s</string>
+    <string name="note_app_ops_failed">Geri verilemeyen özel erişim: %1$s</string>
+
+    <string name="err_no_root">Root erişimi reddedildi. %1$s</string>
+    <string name="err_invalid_input">Geçersiz değer: %1$s</string>
+    <string name="err_not_found">Bulunamadı: %1$s</string>
+    <string name="err_no_space">Yeterli boş alan yok. Gereken: %1$s bayt</string>
+    <string name="err_backup_invalid">Dosya geçerli bir yedek değil: %1$s</string>
+    <string name="err_integrity">Yedek bozuk: %1$s</string>
+    <string name="err_install_failed">Kurulamadı: %1$s</string>
+    <string name="err_command_failed">Komut başarısız: %1$s</string>
+    <string name="err_protected">Korumalı, değiştirilmedi: %1$s</string>
+    <string name="err_cancelled">İptal edildi. %1$s</string>
+    <string name="err_unsupported">Bu Android sürümünde desteklenmiyor: %1$s</string>
+</resources>

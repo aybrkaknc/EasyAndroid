@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">EasyAndroid</string>
+
+    <string name="tab_apps">Apps</string>
+    <string name="tab_backups">Backups</string>
+    <string name="tab_debloat">Debloat</string>
+    <string name="tab_system">System</string>
+    <string name="tab_settings">Settings</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="close">Close</string>
+    <string name="retry">Try again</string>
+    <string name="apply">Apply</string>
+    <string name="apply_count">Apply (%1$d)</string>
+    <string name="delete">Delete</string>
+    <string name="refresh">Refresh</string>
+    <string name="reset">Reset</string>
+    <string name="search">Search</string>
+    <string name="clear">Clear</string>
+    <string name="all">All</string>
+    <string name="error">Error</string>
+    <string name="select_all">Select all</string>
+    <string name="select_none">Select none</string>
+    <string name="select_newest">Select newest</string>
+    <string name="user_apps">User</string>
+    <string name="system_apps">System</string>
+
+    <string name="no_root_title">Root access needed</string>
+    <string name="no_root_text">EasyAndroid backs up and restores apps as root. Allow it in Magisk, KernelSU or your root manager, then try again.</string>
+
+    <string name="back_up">Back up</string>
+    <string name="back_up_count">Back up (%1$d)</string>
+    <string name="restore">Restore</string>
+    <string name="restore_count">Restore (%1$d)</string>
+    <string name="export">Export</string>
+    <string name="import_backup">Import .easybckp</string>
+    <string name="no_backups">No backups yet.</string>
+    <string name="incomplete">Incomplete backup</string>
+
+    <string name="part_app">App (APK)</string>
+    <string name="part_data">Data</string>
+    <string name="part_data_hint">Accounts, settings and files inside the app. Caches are left out.</string>
+    <string name="part_obb">OBB</string>
+    <string name="part_external">External data</string>
+    <string name="part_external_hint">Android/data folder. Can be very large.</string>
+    <string name="part_all_data">All data in the backup</string>
+    <string name="part_permissions">Permissions</string>
+    <string name="part_permissions_hint">Runtime permissions, special access and battery exemption.</string>
+    <string name="keystore_hint">Apps that tie their data to this phone (banking, authenticators) may ask you to sign in again.</string>
+
+    <string name="compression">Compression</string>
+    <string name="compression_none">None</string>
+    <string name="compression_none_hint">Fast and can be restored with EasyADB on a PC. Takes more space.</string>
+    <string name="compression_zstd">zstd</string>
+    <string name="compression_zstd_hint">Takes less space but is slower. EasyADB cannot read it yet.</string>
+    <string name="force_stop_warning">The selected apps will be closed while they are backed up, so that their data is consistent.</string>
+
+    <string name="already_installed">%1$s is already installed</string>
+    <string name="installed_version">Installed: %1$s</string>
+    <string name="backup_version">Backup: %1$s, %2$s</string>
+    <string name="overwrite">Overwrite</string>
+    <string name="skip">Skip</string>
+    <string name="overwrite_warning">Overwriting replaces the app and its current data with the backup. This cannot be undone.</string>
+    <string name="for_all">Do this for all %1$d</string>
+
+    <string name="delete_title">Delete %1$d backup(s)?</string>
+    <string name="delete_warning">This cannot be undone.</string>
+
+    <string name="removal_recommended">Recommended</string>
+    <string name="removal_advanced">Advanced</string>
+    <string name="removal_expert">Expert</string>
+    <string name="removal_unsafe">Unsafe</string>
+    <string name="removal_unlisted">Not listed</string>
+    <string name="show_removed">Removed</string>
+    <string name="state_disabled">disabled</string>
+    <string name="state_uninstalled">uninstalled</string>
+    <string name="selected_count">%1$d selected</string>
+    <string name="debloat_disable_count">Disable (%1$d)</string>
+    <string name="debloat_uninstall_count">Uninstall (%1$d)</string>
+    <string name="bring_back_count">Bring back (%1$d)</string>
+    <string name="debloat_profile">Debloat profile</string>
+    <string name="debloat_profile_hint">Saves the removed and disabled apps as a file, so the same cleanup can be applied on a new ROM.</string>
+    <string name="profile_save_state">Save removed apps as profile</string>
+    <string name="profile_load">Load profile</string>
+    <string name="no_description">This package is not in the UAD-NG list. Be careful.</string>
+    <string name="needed_by">Needed by</string>
+    <string name="debloat_confirm">Change %1$d package(s)?</string>
+    <string name="debloat_commands">These commands will run:</string>
+    <string name="uninstall_warning">Uninstalling the wrong system app can stop the phone from starting. A backup is recommended.</string>
+    <string name="uninstall_user_warning">These are not system apps and have to be downloaded again: %1$s</string>
+
+    <string name="wireless_title">Wireless debugging</string>
+    <string name="wireless_switch">Wireless debugging</string>
+    <string name="wireless_on">On. Turning it off or on again cancels a pairing in progress.</string>
+    <string name="wireless_off">Off</string>
+    <string name="wireless_address">Connect address</string>
+    <string name="wireless_port_unknown">%1$s (port not found yet)</string>
+    <string name="wireless_no_wifi">Not connected to Wi-Fi</string>
+    <string name="wireless_qr">Pair with QR code</string>
+    <string name="wireless_code">Pair with pairing code</string>
+    <string name="wireless_turn_on">Turn wireless debugging on to pair.</string>
+    <string name="wireless_help">In EasyADB open the Wireless tab. For a QR code, tap the first button and scan the QR on the PC. For a code, tap the second button and type the code shown here into EasyADB. After pairing, connect to the address above.</string>
+    <string name="copy">Copy</string>
+
+    <string name="system_create">New system backup</string>
+    <string name="system_hint">What a new ROM loses besides apps. Permissions, special access and battery exemptions are saved with each app.</string>
+    <string name="system_settings">System settings</string>
+    <string name="system_roles">Default apps</string>
+    <string name="system_wifi">Wi-Fi networks and passwords</string>
+    <string name="system_wifi_hint">Passwords are stored unencrypted in the backup folder. Apps with storage access can read them.</string>
+    <string name="system_saved">Saved system backups</string>
+    <string name="system_diff">Choose what to restore</string>
+    <string name="system_diff_hint">Only differences are listed. Settings that mean the same on every ROM are selected; the rest may be specific to the old ROM.</string>
+    <string name="system_no_diff">Nothing differs from this backup.</string>
+    <string name="system_apply_warning">The selected settings will be changed. Settings of another ROM can cause problems.</string>
+    <string name="wifi_item">Wi-Fi: %1$s</string>
+    <string name="change">%1$s to %2$s</string>
+
+    <string name="backup_folder">Backup folder</string>
+    <string name="backup_folder_hint">Copy this folder to a PC before formatting the phone. EasyADB can open it directly.</string>
+    <string name="choose_folder">Choose folder</string>
+    <string name="folder_unsupported">This folder has no path on the phone. Choose one on internal storage or an SD card.</string>
+    <string name="language">Language</string>
+    <string name="change_language">Change language</string>
+    <string name="language_system">Follows the system language.</string>
+    <string name="about">About</string>
+    <string name="about_text">GPL-3.0. Package descriptions come from Universal Android Debloater Next Generation.</string>
+
+    <string name="channel_jobs">Running jobs</string>
+    <string name="job_backup">Backup</string>
+    <string name="job_restore">Restore</string>
+    <string name="job_export">Export</string>
+    <string name="job_import">Import</string>
+    <string name="job_debloat">Debloat</string>
+    <string name="job_system_backup">System backup</string>
+    <string name="job_system_restore">System restore</string>
+    <string name="job_position">%1$d of %2$d: %3$s</string>
+    <string name="job_summary">%1$d of %2$d done, %3$d failed</string>
+    <string name="result_line">%1$s: %2$s</string>
+    <string name="result_ok">done</string>
+    <string name="result_warning">done with warnings</string>
+    <string name="result_failed">failed</string>
+    <string name="permissions_restored">%1$s permissions restored</string>
+
+    <string name="stage_prepare">Preparing</string>
+    <string name="stage_apk">App</string>
+    <string name="stage_obb">OBB</string>
+    <string name="stage_data">Data</string>
+    <string name="stage_verify">Verifying</string>
+    <string name="stage_install">Installing</string>
+    <string name="stage_permissions">Permissions</string>
+    <string name="stage_debloat">Changing packages</string>
+    <string name="stage_settings">System settings</string>
+
+    <string name="note_data_failed">Data failed: %1$s</string>
+    <string name="note_device_data_failed">Device protected data failed: %1$s</string>
+    <string name="note_external_data_failed">External data failed: %1$s</string>
+    <string name="note_obb_failed">OBB failed: %1$s</string>
+    <string name="note_permissions_partial">Permissions restored: %1$s</string>
+    <string name="note_app_ops_failed">Special access not restored: %1$s</string>
+
+    <string name="err_no_root">Root access was denied. %1$s</string>
+    <string name="err_invalid_input">Invalid value: %1$s</string>
+    <string name="err_not_found">Not found: %1$s</string>
+    <string name="err_no_space">Not enough free space. Needed: %1$s bytes</string>
+    <string name="err_backup_invalid">The file is not a valid backup: %1$s</string>
+    <string name="err_integrity">The backup is damaged: %1$s</string>
+    <string name="err_install_failed">Install failed: %1$s</string>
+    <string name="err_command_failed">Command failed: %1$s</string>
+    <string name="err_protected">Protected, not changed: %1$s</string>
+    <string name="err_cancelled">Cancelled. %1$s</string>
+    <string name="err_unsupported">Not supported on this Android version: %1$s</string>
+</resources>

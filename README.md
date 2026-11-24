@@ -102,6 +102,8 @@ Changing custom ROMs often means downloading every app again and setting everyth
 
 Before flashing:
 
+See [How to use](docs/HOW_TO_USE.md) for every screen. In short:
+
 1. **Apps:** select the apps and back them up.
 2. **System:** create a system backup.
 3. **Debloat:** save the removed apps as a profile.

@@ -101,6 +101,8 @@ Sık sık custom ROM değiştirmek, her seferinde tüm uygulamaları yeniden ind
 
 ROM kurmadan önce:
 
+Her ekran için [Nasıl kullanılır](docs/HOW_TO_USE.tr.md) sayfasına bakın. Kısaca:
+
 1. **Uygulama:** uygulamaları seçip yedekleyin.
 2. **Sistem:** bir sistem yedeği oluşturun.
 3. **Debloat:** kaldırılan uygulamaları profil olarak kaydedin.

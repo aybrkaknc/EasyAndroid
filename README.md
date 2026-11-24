@@ -4,6 +4,12 @@
   <a href="README.tr.md">Türkçe</a>
 </p>
 
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![License][license-shield]][license-url]
+
 <br />
 <div align="center">
   <img src="icons/icon.png" alt="EasyAndroid" width="96" height="96">
@@ -60,9 +66,10 @@ Changing custom ROMs often means downloading every app again and setting everyth
 
 ### Built With
 
-* [Kotlin](https://kotlinlang.org/) and [Jetpack Compose](https://developer.android.com/compose)
-* [libsu](https://github.com/topjohnwu/libsu)
-* [zstd-jni](https://github.com/luben/zstd-jni)
+* [![Kotlin][Kotlin-shield]][Kotlin-url]
+* [![Jetpack Compose][Compose-shield]][Compose-url]
+* [![libsu][libsu-shield]][libsu-url]
+* [![zstd-jni][zstd-shield]][zstd-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -177,3 +184,25 @@ Ayberk - [@aybrkaknc](https://github.com/aybrkaknc)
 * [EasyADB](https://github.com/aybrkaknc/EasyADB)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[contributors-shield]: https://img.shields.io/github/contributors/aybrkaknc/EasyAndroid.svg?style=for-the-badge
+[contributors-url]: https://github.com/aybrkaknc/EasyAndroid/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/aybrkaknc/EasyAndroid.svg?style=for-the-badge
+[forks-url]: https://github.com/aybrkaknc/EasyAndroid/network/members
+[stars-shield]: https://img.shields.io/github/stars/aybrkaknc/EasyAndroid.svg?style=for-the-badge
+[stars-url]: https://github.com/aybrkaknc/EasyAndroid/stargazers
+[issues-shield]: https://img.shields.io/github/issues/aybrkaknc/EasyAndroid.svg?style=for-the-badge
+[issues-url]: https://github.com/aybrkaknc/EasyAndroid/issues
+[license-shield]: https://img.shields.io/github/license/aybrkaknc/EasyAndroid.svg?style=for-the-badge
+[license-url]: https://github.com/aybrkaknc/EasyAndroid/blob/main/LICENSE
+[Kotlin-shield]: https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white
+[Kotlin-url]: https://kotlinlang.org/
+[Compose-shield]: https://img.shields.io/badge/Jetpack_Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white
+[Compose-url]: https://developer.android.com/compose
+[libsu-shield]: https://img.shields.io/badge/libsu-000000?style=for-the-badge
+[libsu-url]: https://github.com/topjohnwu/libsu
+[zstd-shield]: https://img.shields.io/badge/zstd--jni-FF4F00?style=for-the-badge
+[zstd-url]: https://github.com/luben/zstd-jni

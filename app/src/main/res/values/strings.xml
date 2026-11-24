@@ -137,6 +137,47 @@
     <string name="reports_clear_text">The list of past jobs will be emptied. Backups are not touched.</string>
     <string name="language_name_en" translatable="false">English</string>
     <string name="language_name_tr" translatable="false">Türkçe</string>
+    <string name="apps_selected_count">%1$d / %2$d selected</string>
+    <string name="app_no_backup">No backup on device</string>
+    <string name="app_last_backup">Last backup: %1$s</string>
+    <string name="sheet_parts">User app parts</string>
+    <string name="part_apk">APKs</string>
+    <string name="part_expansion">Expansion (OBB)</string>
+    <string name="part_media">Media</string>
+    <string name="sheet_locations">Select backup locations</string>
+    <string name="location_device">Device</string>
+    <string name="location_cloud">Cloud</string>
+    <string name="sheet_backup">BACKUP</string>
+    <string name="sheet_apply">APPLY OPTIONS</string>
+    <string name="sheet_reset">RESET FILTERS</string>
+    <string name="sort_title">Sort</string>
+    <string name="filter_title">Filter</string>
+    <string name="sort_name">Name</string>
+    <string name="sort_install">Install date</string>
+    <string name="sort_update">Update date</string>
+    <string name="sort_backup_date">Backup date</string>
+    <string name="sort_backup_size">Backup size</string>
+    <string name="filter_favorites">Favorites</string>
+    <string name="filter_fav">Favorites</string>
+    <string name="filter_not_fav">Not favorites</string>
+    <string name="filter_labels">App labels</string>
+    <string name="filter_labelled">Labelled</string>
+    <string name="filter_not_labelled">Not labelled</string>
+    <string name="filter_enabled">Enabled status</string>
+    <string name="filter_enabled_on">Enabled</string>
+    <string name="filter_enabled_off">Disabled</string>
+    <string name="search_shortcuts">SHORTCUTS</string>
+    <string name="search_quick">QUICK ACTIONS</string>
+    <string name="search_apps">APPS</string>
+    <string name="placeholder_selected">0 / 0 selected</string>
+    <string name="placeholder_text">Coming soon. Backing this up will be added later.</string>
+    <string name="backup_options">Backup options</string>
+    <string name="folders_local">Local folder setups</string>
+    <string name="folders_cloud">Cloud backups</string>
+    <string name="folders_empty">No folder setup found on device. Click below to create one.</string>
+    <string name="folders_cloud_empty">No cloud backups.</string>
+    <string name="folders_new">New folder setup</string>
+    <string name="folders_from_cloud">Copy folder setups from cloud</string>
     <string name="settings_theme">Theme</string>
     <string name="more_options">More options</string>
     <string name="theme_system">System</string>
@@ -166,7 +207,6 @@
     <string name="no_root_title">Root access needed</string>
     <string name="no_root_text">EasyAndroid backs up and restores apps as root. Allow it in Magisk, KernelSU or your root manager, then try again.</string>
 
-    <string name="back_up">Back up</string>
     <string name="back_up_count">Back up (%1$d)</string>
     <string name="restore">Restore</string>
     <string name="restore_count">Restore (%1$d)</string>

@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -73,7 +75,41 @@ sealed interface BackupsRequest {
 }
 
 @Composable
+private fun BackupsSegment.title(): String = stringResource(
+    when (this) {
+        BackupsSegment.APPS -> R.string.chip_apps
+        BackupsSegment.MESSAGES -> R.string.chip_messages
+        BackupsSegment.CALLS -> R.string.chip_calls
+        BackupsSegment.FOLDERS -> R.string.chip_folders
+    },
+)
+
+/** The saved backups, by kind. Only apps and system settings have any yet. */
+@Composable
 fun BackupsScreen(model: MainViewModel, request: BackupsRequest?, onRequestHandled: () -> Unit) {
+    var segment by rememberSaveable { mutableStateOf(BackupsSegment.APPS) }
+    // A request from Home is about app or system backups, which are in the first segment.
+    LaunchedEffect(request) { if (request != null) segment = BackupsSegment.APPS }
+    Column(Modifier.fillMaxSize()) {
+        Row(
+            Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            BackupsSegment.entries.forEach { FilterChip(segment == it, { segment = it }, { Text(it.title()) }) }
+        }
+        Box(Modifier.weight(1f)) {
+            when (segment) {
+                BackupsSegment.APPS -> AppBackups(model, request, onRequestHandled)
+                BackupsSegment.MESSAGES -> ListPlaceholderScreen(calls = false)
+                BackupsSegment.CALLS -> ListPlaceholderScreen(calls = true)
+                BackupsSegment.FOLDERS -> FolderBackupsScreen()
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppBackups(model: MainViewModel, request: BackupsRequest?, onRequestHandled: () -> Unit) {
     val context = LocalContext.current
     val stored by model.backups.collectAsStateWithLifecycle()
     val apps by model.apps.collectAsStateWithLifecycle()

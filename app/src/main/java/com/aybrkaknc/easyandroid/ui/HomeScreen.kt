@@ -23,8 +23,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -71,6 +73,7 @@ fun HomeScreen(
     onSystem: () -> Unit,
     onSystemRestore: () -> Unit,
     onStorage: () -> Unit,
+    onSearch: () -> Unit,
 ) {
     val root by model.root.collectAsStateWithLifecycle()
     val settings by Env.prefs.state.collectAsStateWithLifecycle()
@@ -81,7 +84,10 @@ fun HomeScreen(
     val android = painterResource(R.drawable.ic_android)
 
     Column(Modifier.fillMaxSize().verticalScroll(scroll).padding(start = 12.dp, end = 12.dp, bottom = 32.dp)) {
-        CapsLabel(stringResource(R.string.home_overview), Modifier.padding(start = 12.dp, top = 16.dp, bottom = 12.dp))
+        Row(Modifier.fillMaxWidth().padding(start = 12.dp, top = 8.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            CapsLabel(stringResource(R.string.home_overview), Modifier.weight(1f))
+            IconButton(onSearch) { Icon(Icons.Default.Search, stringResource(R.string.search)) }
+        }
         Column(
             Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(cardColor())
                 .padding(vertical = 8.dp),

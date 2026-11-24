@@ -15,6 +15,8 @@ data class AppInfo(
     val enabled: Boolean,
     val apkBytes: Long,
     val debloat: DebloatInfo?,
+    val installTime: Long = 0,
+    val updateTime: Long = 0,
 )
 
 /** Every package known to the system, including system apps removed for this user. */
@@ -36,6 +38,8 @@ fun loadApps(context: Context): List<AppInfo> {
             enabled = app.enabled,
             apkBytes = (listOfNotNull(app.sourceDir) + app.splitSourceDirs.orEmpty()).sumOf { File(it).length() },
             debloat = Env.database[info.packageName],
+            installTime = info.firstInstallTime,
+            updateTime = info.lastUpdateTime,
         )
     }.sortedBy { it.label.lowercase() }
 }

@@ -77,10 +77,12 @@ fun MainScreen(model: MainViewModel) {
     var showApps by rememberSaveable { mutableStateOf(false) }
     var showSystem by rememberSaveable { mutableStateOf(false) }
     var showMore by rememberSaveable { mutableStateOf(false) }
+    var showSearch by rememberSaveable { mutableStateOf(false) }
     var showEasyAdb by remember { mutableStateOf(false) }
     var settingsPage by rememberSaveable { mutableStateOf<SettingsPage?>(null) }
     var request by remember { mutableStateOf<BackupsRequest?>(null) }
-    var backingUp by remember { mutableStateOf<List<AppInfo>?>(null) }
+    // The apps a quick action has ticked in the app list.
+    var preselect by remember { mutableStateOf<Set<String>>(emptySet()) }
     var deleting by remember { mutableStateOf<List<String>?>(null) }
     val apps by model.apps.collectAsStateWithLifecycle()
     val stored by model.backups.collectAsStateWithLifecycle()
@@ -97,8 +99,14 @@ fun MainScreen(model: MainViewModel) {
         }
         when (action) {
             QuickAction.BACKUP_ALL, QuickAction.BACKUP_PENDING, QuickAction.BACKUP_UPDATED, QuickAction.BACKUP_REDO ->
-                check(targets.backup(action)) { backingUp = it }
-            QuickAction.BACKUP_SELECT -> showApps = true
+                check(targets.backup(action)) { found ->
+                    preselect = found.map { it.packageName }.toSet()
+                    showApps = true
+                }
+            QuickAction.BACKUP_SELECT -> {
+                preselect = emptySet()
+                showApps = true
+            }
             QuickAction.RESTORE_ALL, QuickAction.RESTORE_MISSING, QuickAction.RESTORE_NEWER -> check(targets.restore(action)) { found ->
                 request = BackupsRequest.Select(found.map { it.id }.toSet())
                 showMore = false
@@ -116,13 +124,14 @@ fun MainScreen(model: MainViewModel) {
     // Back from another tab goes to the first one; only back from the first tab leaves the app.
     BackHandler(enabled = tab != Tab.HOME) { tab = Tab.HOME }
     BackHandler(enabled = showMore) { showMore = false }
+    BackHandler(enabled = showSearch) { showSearch = false }
     BackHandler(enabled = showApps) { showApps = false }
     BackHandler(enabled = settingsPage != null) { settingsPage = null }
     BackHandler(enabled = showSystem) { showSystem = false }
 
     Scaffold(
         bottomBar = {
-            if (job == null && !showApps && !showSystem && !showMore && !(tab == Tab.SETTINGS && settingsPage != null)) {
+            if (job == null && !showApps && !showSystem && !showMore && !showSearch && !(tab == Tab.SETTINGS && settingsPage != null)) {
                 NavigationBar {
                     Tab.entries.forEach {
                         NavigationBarItem(
@@ -140,9 +149,27 @@ fun MainScreen(model: MainViewModel) {
             val current = job
             when {
                 current != null -> JobScreen(current)
-                showApps -> Overlay(stringResource(R.string.home_quick_backup), { showApps = false }) { AppsScreen(model) }
+                showApps -> Overlay(stringResource(R.string.home_quick_backup), { showApps = false }) { AppsScreen(model, preselect) }
                 showSystem -> Overlay(stringResource(R.string.home_quick_system), { showSystem = false }) {
                     SystemBackupScreen(model) { showSystem = false }
+                }
+                showSearch -> Overlay(stringResource(R.string.search), { showSearch = false }) {
+                    SearchScreen(
+                        model,
+                        onApps = {
+                            showSearch = false
+                            preselect = emptySet()
+                            showApps = true
+                        },
+                        onSystemBackup = {
+                            showSearch = false
+                            showSystem = true
+                        },
+                        onAction = {
+                            showSearch = false
+                            perform(it)
+                        },
+                    )
                 }
                 showMore -> Overlay(stringResource(R.string.more_actions), { showMore = false }) {
                     QuickActionsScreen(ready, ::perform) { showEasyAdb = true }
@@ -171,6 +198,7 @@ fun MainScreen(model: MainViewModel) {
                         settingsPage = SettingsPage.STORAGE
                         tab = Tab.SETTINGS
                     },
+                    onSearch = { showSearch = true },
                 )
                 root == RootState.CHECKING -> Loading()
                 root == RootState.MISSING -> NoRoot(model::checkRoot)
@@ -183,18 +211,6 @@ fun MainScreen(model: MainViewModel) {
     }
 
     if (showEasyAdb) EasyAdbDialog(model) { showEasyAdb = false }
-
-    backingUp?.let { chosen ->
-        val system = chosen.count { it.system }
-        BackupDialog(
-            chosen.size,
-            onDismiss = { backingUp = null },
-            note = if (system > 0) stringResource(R.string.quick_system_note, system) else null,
-        ) { options ->
-            backingUp = null
-            startBackup(model, chosen, options)
-        }
-    }
 
     deleting?.let { ids ->
         ConfirmDialog(

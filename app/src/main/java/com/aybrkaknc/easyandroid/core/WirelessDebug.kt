@@ -18,6 +18,12 @@ class WirelessDebug(private val shell: Root) {
         return if (result.ok || result.out.isNotBlank()) parsePort(result.out) else null
     }
 
+    /** True while a PC has an open TCP connection to adbd on [port]. */
+    fun isConnected(port: Int): Boolean {
+        val result = shell.run("ss -tn 2>/dev/null; netstat -tn 2>/dev/null")
+        return connectedTo(result.out, port)
+    }
+
     /** The screen that scans a QR code, shown by EasyADB, on the phone. */
     fun openQrPairing() = start("-n $QR_ACTIVITY")
 
@@ -41,6 +47,13 @@ class WirelessDebug(private val shell: Root) {
                 (SS.find(line) ?: NETSTAT.find(line))?.groupValues?.get(1)?.toIntOrNull()
             }.toList()
             return ports.firstOrNull { it != 5555 } ?: ports.firstOrNull()
+        }
+
+        /** `ss -tn` or `netstat -tn` output with an established connection whose local side is [port]. */
+        fun connectedTo(output: String, port: Int): Boolean {
+            val local = Regex("""\S*:$port\s+\S+""")
+            val state = Regex("""ESTAB""")
+            return output.lineSequence().any { state.containsMatchIn(it) && local.containsMatchIn(it) }
         }
 
         const val SETTING = "adb_wifi_enabled"

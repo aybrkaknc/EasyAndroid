@@ -1,22 +1,27 @@
 package com.aybrkaknc.easyandroid.ui
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -27,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,6 +46,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aybrkaknc.easyandroid.AppInfo
+import com.aybrkaknc.easyandroid.Env
 import com.aybrkaknc.easyandroid.MainViewModel
 import com.aybrkaknc.easyandroid.R
 import com.aybrkaknc.easyandroid.RootState
@@ -49,16 +57,14 @@ import com.aybrkaknc.easyandroid.job.ResultKind
 import com.aybrkaknc.easyandroid.job.stageId
 
 private enum class Tab(@param:StringRes val title: Int) {
-    APPS(R.string.tab_apps), BACKUPS(R.string.tab_backups), DEBLOAT(R.string.tab_debloat),
-    SYSTEM(R.string.tab_system), SETTINGS(R.string.tab_settings),
+    HOME(R.string.tab_home), BACKUPS(R.string.tab_backups), DEBLOAT(R.string.tab_debloat), SETTINGS(R.string.tab_settings),
 }
 
 @Composable
 private fun Tab.icon(): Painter = when (this) {
-    Tab.APPS -> painterResource(R.drawable.ic_apps)
+    Tab.HOME -> rememberVectorPainter(Icons.Default.Home)
     Tab.BACKUPS -> painterResource(R.drawable.ic_restore)
     Tab.DEBLOAT -> rememberVectorPainter(Icons.Default.Delete)
-    Tab.SYSTEM -> rememberVectorPainter(Icons.Default.Build)
     Tab.SETTINGS -> rememberVectorPainter(Icons.Default.Settings)
 }
 
@@ -67,14 +73,56 @@ fun MainScreen(model: MainViewModel) {
     val root by model.root.collectAsStateWithLifecycle()
     val job by Jobs.state.collectAsStateWithLifecycle()
     val error by model.error.collectAsStateWithLifecycle()
-    var tab by rememberSaveable { mutableStateOf(Tab.APPS) }
+    var tab by rememberSaveable { mutableStateOf(Tab.HOME) }
+    var showApps by rememberSaveable { mutableStateOf(false) }
+    var showSystem by rememberSaveable { mutableStateOf(false) }
+    var showMore by rememberSaveable { mutableStateOf(false) }
+    var showEasyAdb by remember { mutableStateOf(false) }
+    var settingsPage by rememberSaveable { mutableStateOf<SettingsPage?>(null) }
+    var request by remember { mutableStateOf<BackupsRequest?>(null) }
+    var backingUp by remember { mutableStateOf<List<AppInfo>?>(null) }
+    var deleting by remember { mutableStateOf<List<String>?>(null) }
+    val apps by model.apps.collectAsStateWithLifecycle()
+    val stored by model.backups.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    // Kept here so that Home stays where it was behind a full screen list.
+    val homeScroll = rememberScrollState()
+    // Bulk actions need both lists to know what they cover.
+    val ready = root == RootState.GRANTED && apps != null && stored != null
+
+    fun perform(action: QuickAction) {
+        val targets = QuickTargets(apps ?: return, stored?.backups ?: return, Env.debloat()::isProtected)
+        fun <T> check(items: List<T>, use: (List<T>) -> Unit) {
+            if (items.isEmpty()) Toast.makeText(context, R.string.nothing_to_do, Toast.LENGTH_SHORT).show() else use(items)
+        }
+        when (action) {
+            QuickAction.BACKUP_ALL, QuickAction.BACKUP_PENDING, QuickAction.BACKUP_UPDATED, QuickAction.BACKUP_REDO ->
+                check(targets.backup(action)) { backingUp = it }
+            QuickAction.BACKUP_SELECT -> showApps = true
+            QuickAction.RESTORE_ALL, QuickAction.RESTORE_MISSING, QuickAction.RESTORE_NEWER -> check(targets.restore(action)) { found ->
+                request = BackupsRequest.Select(found.map { it.id }.toSet())
+                showMore = false
+                tab = Tab.BACKUPS
+            }
+            QuickAction.DELETE_MISSING -> check(targets.deletable()) { found -> deleting = found.map { it.id } }
+            QuickAction.TOGGLE -> {
+                showMore = false
+                tab = Tab.DEBLOAT
+            }
+            QuickAction.SYNC -> showSoon(context)
+        }
+    }
 
     // Back from another tab goes to the first one; only back from the first tab leaves the app.
-    BackHandler(enabled = tab != Tab.APPS) { tab = Tab.APPS }
+    BackHandler(enabled = tab != Tab.HOME) { tab = Tab.HOME }
+    BackHandler(enabled = showMore) { showMore = false }
+    BackHandler(enabled = showApps) { showApps = false }
+    BackHandler(enabled = settingsPage != null) { settingsPage = null }
+    BackHandler(enabled = showSystem) { showSystem = false }
 
     Scaffold(
         bottomBar = {
-            if (root == RootState.GRANTED && job == null) {
+            if (job == null && !showApps && !showSystem && !showMore && !(tab == Tab.SETTINGS && settingsPage != null)) {
                 NavigationBar {
                     Tab.entries.forEach {
                         NavigationBarItem(
@@ -91,17 +139,79 @@ fun MainScreen(model: MainViewModel) {
         Box(Modifier.fillMaxSize().padding(padding)) {
             val current = job
             when {
+                current != null -> JobScreen(current)
+                showApps -> Overlay(stringResource(R.string.home_quick_backup), { showApps = false }) { AppsScreen(model) }
+                showSystem -> Overlay(stringResource(R.string.home_quick_system), { showSystem = false }) {
+                    SystemBackupScreen(model) { showSystem = false }
+                }
+                showMore -> Overlay(stringResource(R.string.more_actions), { showMore = false }) {
+                    QuickActionsScreen(ready, ::perform) { showEasyAdb = true }
+                }
+                tab == Tab.SETTINGS -> {
+                    val page = settingsPage
+                    if (page == null) {
+                        SettingsScreen(model, onPage = { settingsPage = it }, onSystemBackup = { showSystem = true })
+                    } else {
+                        Overlay(stringResource(page.title), { settingsPage = null }) { SettingsPageContent(page, model) }
+                    }
+                }
+                tab == Tab.HOME -> HomeScreen(
+                    model,
+                    ready,
+                    homeScroll,
+                    onAction = ::perform,
+                    onMore = { showMore = true },
+                    onEasyAdb = { showEasyAdb = true },
+                    onSystemRestore = {
+                        request = BackupsRequest.System
+                        tab = Tab.BACKUPS
+                    },
+                    onSystem = { showSystem = true },
+                    onStorage = {
+                        settingsPage = SettingsPage.STORAGE
+                        tab = Tab.SETTINGS
+                    },
+                )
                 root == RootState.CHECKING -> Loading()
                 root == RootState.MISSING -> NoRoot(model::checkRoot)
-                current != null -> JobScreen(current)
                 else -> when (tab) {
-                    Tab.APPS -> AppsScreen(model)
-                    Tab.BACKUPS -> BackupsScreen(model)
-                    Tab.DEBLOAT -> DebloatScreen(model)
-                    Tab.SYSTEM -> SystemScreen(model)
-                    Tab.SETTINGS -> SettingsScreen(model)
+                    Tab.BACKUPS -> BackupsScreen(model, request) { request = null }
+                    else -> DebloatScreen(model)
                 }
             }
+        }
+    }
+
+    if (showEasyAdb) EasyAdbDialog(model) { showEasyAdb = false }
+
+    backingUp?.let { chosen ->
+        val system = chosen.count { it.system }
+        BackupDialog(
+            chosen.size,
+            onDismiss = { backingUp = null },
+            note = if (system > 0) stringResource(R.string.quick_system_note, system) else null,
+        ) { options ->
+            backingUp = null
+            startBackup(model, chosen, options)
+        }
+    }
+
+    deleting?.let { ids ->
+        ConfirmDialog(
+            title = stringResource(R.string.delete_title, ids.size),
+            confirm = stringResource(R.string.delete),
+            onConfirm = {
+                deleting = null
+                model.run {
+                    val store = Env.store()
+                    ids.forEach(store::delete)
+                    model.refreshBackups()
+                }
+            },
+            onDismiss = { deleting = null },
+        ) {
+            Text(stringResource(R.string.delete_warning), color = MaterialTheme.colorScheme.error)
+            ids.forEach { Hint(it) }
         }
     }
 
@@ -112,6 +222,18 @@ fun MainScreen(model: MainViewModel) {
             onConfirm = { model.error.value = null },
             onDismiss = { model.error.value = null },
         ) { Text(text.resolve(LocalContext.current)) }
+    }
+}
+
+/** A screen shown full screen over the tabs, with a back arrow. */
+@Composable
+private fun Overlay(title: String, onBack: () -> Unit, content: @Composable () -> Unit) {
+    Column(Modifier.fillMaxSize()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
+            Text(title, style = MaterialTheme.typography.titleLarge)
+        }
+        Box(Modifier.weight(1f)) { content() }
     }
 }
 

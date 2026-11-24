@@ -92,7 +92,7 @@ fun AppsScreen(model: MainViewModel) {
     }
 }
 
-private fun startBackup(model: MainViewModel, apps: List<AppInfo>, options: BackupOptions) {
+fun startBackup(model: MainViewModel, apps: List<AppInfo>, options: BackupOptions) {
     val engine = Env.backups()
     val device by lazy { engine.snapshot() }
     Jobs.start(Env.app, R.string.job_backup, apps, { it.label }, after = { model.refreshBackups() }) { app, task ->
@@ -101,8 +101,8 @@ private fun startBackup(model: MainViewModel, apps: List<AppInfo>, options: Back
 }
 
 @Composable
-private fun BackupDialog(count: Int, onDismiss: () -> Unit, onConfirm: (BackupOptions) -> Unit) {
-    var options by remember { mutableStateOf(BackupOptions()) }
+fun BackupDialog(count: Int, onDismiss: () -> Unit, note: String? = null, onConfirm: (BackupOptions) -> Unit) {
+    var options by remember { mutableStateOf(Env.prefs.state.value.backup) }
     ConfirmDialog(
         title = stringResource(R.string.back_up_count, count),
         confirm = stringResource(R.string.back_up),
@@ -126,6 +126,7 @@ private fun BackupDialog(count: Int, onDismiss: () -> Unit, onConfirm: (BackupOp
         }
         if (options.data || options.externalData) {
             Text(stringResource(R.string.force_stop_warning), color = MaterialTheme.colorScheme.error)
+            if (note != null) Text(note, color = MaterialTheme.colorScheme.error)
         }
     }
 }

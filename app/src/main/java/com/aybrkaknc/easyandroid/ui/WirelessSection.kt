@@ -6,19 +6,25 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.aybrkaknc.easyandroid.MainViewModel
 import com.aybrkaknc.easyandroid.R
@@ -31,9 +37,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
-/** Wireless debugging: switch, address and shortcuts to the pairing screens of Settings. */
+/** Wireless debugging: switch, address, state and shortcuts to the pairing screens of Settings. */
 @Composable
-fun WirelessSection(model: MainViewModel) {
+fun WirelessControls(model: MainViewModel) {
     val context = LocalContext.current
     val enabled by produceState(WirelessInfo.isEnabled(context)) {
         while (true) {
@@ -54,7 +60,14 @@ fun WirelessSection(model: MainViewModel) {
             delay(4000)
         }
     }
-    val address = port?.let { p -> ip?.let { "$it:$p" } }
+    val connected by produceState(false, port) {
+        val p = port ?: return@produceState
+        while (true) {
+            value = withContext(Dispatchers.IO) { runCatching { WirelessDebug(SuRoot).isConnected(p) }.getOrDefault(false) }
+            delay(4000)
+        }
+    }
+    val shown = port?.let { p -> ip?.let { "$it:$p" } }
 
     fun open(action: (WirelessDebug) -> Unit) = model.run {
         try {
@@ -68,41 +81,57 @@ fun WirelessSection(model: MainViewModel) {
         }
     }
 
-    Heading(stringResource(R.string.wireless_title))
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
-            Text(stringResource(R.string.wireless_switch))
-            Hint(stringResource(if (enabled) R.string.wireless_on else R.string.wireless_off))
-        }
-        Switch(enabled, onCheckedChange = { on -> model.run { WirelessDebug(SuRoot).setEnabled(on) } })
-    }
+    SettingRow(
+        title = stringResource(R.string.wireless_switch),
+        summary = stringResource(if (enabled) R.string.wireless_on else R.string.wireless_off),
+        onClick = { model.run { WirelessDebug(SuRoot).setEnabled(!enabled) } },
+    ) { Switch(enabled, onCheckedChange = null) }
     if (enabled) {
-        val shown = address
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Hint(stringResource(R.string.wireless_address))
-                Text(
-                    when {
-                        shown != null -> shown
-                        ip != null -> stringResource(R.string.wireless_port_unknown, ip.orEmpty())
-                        else -> stringResource(R.string.wireless_no_wifi)
-                    },
-                )
-            }
+        SettingRow(
+            title = stringResource(R.string.wireless_address),
+            summary = when {
+                shown != null -> shown
+                ip != null -> stringResource(R.string.wireless_port_unknown, ip.orEmpty())
+                else -> stringResource(R.string.wireless_no_wifi)
+            },
+        ) {
             if (shown != null) {
                 TextButton({
                     context.getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText("adb", shown))
                 }) { Text(stringResource(R.string.copy)) }
             }
         }
-    }
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        OutlinedButton({ open { it.openQrPairing() } }, Modifier.fillMaxWidth(), enabled = enabled) {
-            Text(stringResource(R.string.wireless_qr))
+        SettingRow(title = stringResource(if (connected) R.string.wireless_connected else R.string.wireless_not_connected))
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            FilledTonalButton({ open { it.openQrPairing() } }, Modifier.weight(1f), contentPadding = PaddingValues(8.dp)) {
+                Text(stringResource(R.string.wireless_qr), textAlign = TextAlign.Center)
+            }
+            FilledTonalButton({ open { it.openPage() } }, Modifier.weight(1f), contentPadding = PaddingValues(8.dp)) {
+                Text(stringResource(R.string.wireless_code), textAlign = TextAlign.Center)
+            }
         }
-        OutlinedButton({ open { it.openPage() } }, Modifier.fillMaxWidth(), enabled = enabled) {
-            Text(stringResource(R.string.wireless_code))
-        }
     }
-    Hint(stringResource(if (enabled) R.string.wireless_help else R.string.wireless_turn_on))
+}
+
+/** How to reach this phone from EasyADB. Turns Wireless debugging on, because nothing works without it. */
+@Composable
+fun EasyAdbDialog(model: MainViewModel, onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        if (!WirelessInfo.isEnabled(context)) model.run { WirelessDebug(SuRoot).setEnabled(true) }
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.easyadb_title)) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                Text(stringResource(R.string.easyadb_hint))
+                WirelessControls(model)
+            }
+        },
+        confirmButton = { TextButton(onDismiss) { Text(stringResource(R.string.close)) } },
+    )
 }

@@ -1,21 +1,28 @@
 package com.aybrkaknc.easyandroid.ui
 
-import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.provider.DocumentsContract
-import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
+import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -24,30 +31,45 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aybrkaknc.easyandroid.BuildConfig
 import com.aybrkaknc.easyandroid.Env
 import com.aybrkaknc.easyandroid.MainViewModel
 import com.aybrkaknc.easyandroid.R
-import com.aybrkaknc.easyandroid.core.AppException
+import com.aybrkaknc.easyandroid.RootState
+import com.aybrkaknc.easyandroid.ThemeMode
 import com.aybrkaknc.easyandroid.core.DEFAULT_ROOT
-import com.aybrkaknc.easyandroid.core.DebloatProfile
-import com.aybrkaknc.easyandroid.core.ErrorCode
-import com.aybrkaknc.easyandroid.core.ProfileEntry
 import com.aybrkaknc.easyandroid.core.treePath
 import com.aybrkaknc.easyandroid.job.UiText
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
+private val Blue = Color(0xFF2E9CF5)
+private val Teal = Color(0xFF2EC4B6)
+private val Green = Color(0xFF3DDC84)
+private val Amber = Color(0xFFF5A623)
+
+@StringRes
+private fun ThemeMode.title(): Int = when (this) {
+    ThemeMode.SYSTEM -> R.string.theme_system
+    ThemeMode.LIGHT -> R.string.theme_light
+    ThemeMode.DARK -> R.string.theme_dark
+    ThemeMode.BLACK -> R.string.theme_black
+}
+
+/** Settings in groups, like the app they follow: each row opens a page, a dialog or another app. */
 @Composable
-fun SettingsScreen(model: MainViewModel) {
+fun SettingsScreen(model: MainViewModel, onPage: (SettingsPage) -> Unit, onSystemBackup: () -> Unit) {
     val context = LocalContext.current
     val settings by Env.prefs.state.collectAsStateWithLifecycle()
-    val apps by model.apps.collectAsStateWithLifecycle()
-    var plan by remember { mutableStateOf<List<ProfileEntry>?>(null) }
+    val root by model.root.collectAsStateWithLifecycle()
+    var about by remember { mutableStateOf(false) }
 
     val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         if (uri != null) {
@@ -60,63 +82,147 @@ fun SettingsScreen(model: MainViewModel) {
             }
         }
     }
-    val save = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
-        val entries = removedProfile(model.apps.value.orEmpty())
-        if (uri != null) model.run { saveProfile(uri, entries) }
-    }
-    val load = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null) model.run {
-            val text = Env.app.contentResolver.openInputStream(uri)?.use { it.readBytes().decodeToString() }
-                ?: throw AppException(ErrorCode.NOT_FOUND, uri.toString())
-            val known = model.apps.value.orEmpty().map { it.packageName }.toSet()
-            // Packages the new ROM does not have are left out.
-            val entries = DebloatProfile.parse(text).entries.filter { it.packageName in known }
-            withContext(Dispatchers.Main) { plan = entries }
-        }
-    }
 
-    Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Heading(stringResource(R.string.backup_folder))
-        Text(settings.backupRoot)
-        Hint(stringResource(R.string.backup_folder_hint))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton({ pick.launch(null) }) { Text(stringResource(R.string.choose_folder)) }
-            if (settings.backupRoot != DEFAULT_ROOT) {
-                TextButton({
-                    Env.prefs.setBackupRoot(null)
-                    model.refreshBackups()
-                }) { Text(stringResource(R.string.reset)) }
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+        SettingsHeader(stringResource(R.string.settings_group_appearance))
+        CardGroup(2) { index, shape ->
+            if (index == 0) {
+                var menu by remember { mutableStateOf(false) }
+                Box {
+                    SettingCard(
+                        stringResource(R.string.settings_theme), shape, summary = stringResource(settings.theme.title()),
+                        icon = painterResource(R.drawable.ic_moon), tint = Blue, onClick = { menu = true },
+                    ) { Icon(Icons.Default.KeyboardArrowDown, null) }
+                    DropdownMenu(menu, { menu = false }, offset = DpOffset(16.dp, 0.dp)) {
+                        ThemeMode.entries.forEach { mode ->
+                            DropdownMenuItem(
+                                text = { Text(stringResource(mode.title())) },
+                                onClick = {
+                                    Env.prefs.setTheme(mode)
+                                    menu = false
+                                },
+                                trailingIcon = { if (mode == settings.theme) Icon(Icons.Default.Check, null) },
+                            )
+                        }
+                    }
+                }
+            } else {
+                SettingCard(
+                    stringResource(R.string.language), shape, summary = languageName(appLanguage(context)),
+                    icon = painterResource(R.drawable.ic_language), tint = Teal, onClick = { onPage(SettingsPage.LANGUAGE) },
+                )
             }
         }
 
-        Heading(stringResource(R.string.debloat_profile))
-        Hint(stringResource(R.string.debloat_profile_hint))
-        OutlinedButton({ save.launch("easyandroid-debloat.json") }, Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.profile_save_state))
+        SettingsHeader(stringResource(R.string.settings_group_content))
+        CardGroup(4) { index, shape ->
+            when (index) {
+                0 -> SettingCard(
+                    stringResource(R.string.content_app_backups), shape, summary = stringResource(R.string.content_app_backups_text),
+                    icon = painterResource(R.drawable.ic_android), tint = Category.BACKUP, onClick = { onPage(SettingsPage.APP_BACKUPS) },
+                )
+                1 -> SettingCard(
+                    stringResource(R.string.content_system_backups), shape, summary = stringResource(R.string.content_system_backups_text),
+                    icon = rememberVectorPainter(Icons.Default.Build), tint = Category.SYSTEM,
+                    enabled = root == RootState.GRANTED, onClick = onSystemBackup,
+                )
+                2 -> SettingCard(
+                    stringResource(R.string.content_messages), shape, summary = stringResource(R.string.content_messages_text),
+                    icon = painterResource(R.drawable.ic_message), tint = Category.MESSAGES, soon = true,
+                )
+                else -> SettingCard(
+                    stringResource(R.string.content_calls), shape, summary = stringResource(R.string.content_calls_text),
+                    icon = rememberVectorPainter(Icons.Default.Call), tint = Category.CALLS, soon = true,
+                )
+            }
         }
-        OutlinedButton({ load.launch(arrayOf("*/*")) }, Modifier.fillMaxWidth()) { Text(stringResource(R.string.profile_load)) }
 
-        Heading(stringResource(R.string.language))
-        if (Build.VERSION.SDK_INT >= 33) {
-            OutlinedButton({
-                context.startActivity(Intent(Settings.ACTION_APP_LOCALE_SETTINGS, Uri.fromParts("package", context.packageName, null)))
-            }) { Text(stringResource(R.string.change_language)) }
-        } else {
-            Hint(stringResource(R.string.language_system))
+        SettingsHeader(stringResource(R.string.settings_group_storage))
+        CardGroup(2) { index, shape ->
+            if (index == 0) {
+                SettingCard(
+                    stringResource(R.string.backup_folder), shape, summary = settings.backupRoot,
+                    icon = painterResource(R.drawable.ic_storage), tint = Green, onClick = { pick.launch(null) },
+                ) {
+                    if (settings.backupRoot != DEFAULT_ROOT) {
+                        TextButton({
+                            Env.prefs.setBackupRoot(null)
+                            model.refreshBackups()
+                        }) { Text(stringResource(R.string.reset)) }
+                    }
+                }
+            } else {
+                SettingCard(
+                    stringResource(R.string.storage_space), shape, summary = stringResource(R.string.storage_space_text),
+                    icon = painterResource(R.drawable.ic_donut), tint = Green, onClick = { onPage(SettingsPage.STORAGE) },
+                )
+            }
         }
 
-        Heading(stringResource(R.string.about))
-        Text(stringResource(R.string.app_name) + " " + BuildConfig.VERSION_NAME)
-        Hint(stringResource(R.string.about_text))
+        SettingsHeader(stringResource(R.string.settings_group_notifications))
+        CardGroup(2) { index, shape ->
+            if (index == 0) {
+                SettingCard(
+                    stringResource(R.string.notif_app), shape, summary = stringResource(R.string.notif_app_text),
+                    icon = rememberVectorPainter(Icons.Default.Notifications), tint = Amber, onClick = { notificationSettings(context) },
+                )
+            } else {
+                SettingCard(
+                    stringResource(R.string.notif_sound), shape, summary = stringResource(R.string.notif_sound_text),
+                    icon = rememberVectorPainter(Icons.Default.Notifications), tint = Amber, soon = true,
+                )
+            }
+        }
+
+        SettingsHeader(stringResource(R.string.settings_group_advanced))
+        CardGroup(2) { index, shape ->
+            if (index == 0) {
+                SettingCard(
+                    stringResource(R.string.advanced_reports), shape, summary = stringResource(R.string.advanced_reports_text),
+                    icon = painterResource(R.drawable.ic_bug), tint = Category.CALLS, onClick = { onPage(SettingsPage.REPORTS) },
+                )
+            } else {
+                SettingCard(
+                    stringResource(R.string.advanced_restart), shape, summary = stringResource(R.string.advanced_restart_text),
+                    icon = painterResource(R.drawable.ic_restart), tint = Blue, onClick = { restartApp(context) },
+                )
+            }
+        }
+
+        SettingsHeader(stringResource(R.string.settings_group_help))
+        CardGroup(5) { index, shape ->
+            when (index) {
+                0 -> SettingCard(
+                    stringResource(R.string.help_center), shape, summary = stringResource(R.string.help_center_text),
+                    icon = painterResource(R.drawable.ic_help), tint = Amber, onClick = { openUrl(context, helpUrl(context)) },
+                )
+                1 -> SettingCard(
+                    stringResource(R.string.help_contact), shape, summary = stringResource(R.string.help_contact_text),
+                    icon = rememberVectorPainter(Icons.AutoMirrored.Filled.Send), tint = Amber, onClick = { openUrl(context, "$REPO/issues") },
+                )
+                2 -> SettingCard(
+                    stringResource(R.string.help_rate), shape, summary = stringResource(R.string.help_rate_text),
+                    icon = rememberVectorPainter(Icons.Default.Star), tint = Amber, onClick = { openUrl(context, REPO) },
+                )
+                3 -> SettingCard(
+                    stringResource(R.string.help_share), shape, summary = stringResource(R.string.help_share_text),
+                    icon = rememberVectorPainter(Icons.Default.Share), tint = Green, onClick = { shareApp(context) },
+                )
+                else -> SettingCard(
+                    stringResource(R.string.about), shape, summary = stringResource(R.string.about_text_short),
+                    icon = rememberVectorPainter(Icons.Default.Info), tint = Amber, onClick = { about = true },
+                )
+            }
+        }
     }
 
-    plan?.let { entries ->
-        DebloatPlanDialog(entries, apps.orEmpty(), onDismiss = { plan = null }) {
-            plan = null
-            startDebloat(model, apps.orEmpty(), entries)
-        }
+    if (about) {
+        ConfirmDialog(
+            title = stringResource(R.string.app_name) + " " + BuildConfig.VERSION_NAME,
+            confirm = stringResource(R.string.close),
+            onConfirm = { about = false },
+            onDismiss = { about = false },
+            dismiss = "",
+        ) { Text(stringResource(R.string.about_text)) }
     }
 }

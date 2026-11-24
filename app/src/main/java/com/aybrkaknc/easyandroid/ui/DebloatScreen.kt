@@ -2,8 +2,14 @@ package com.aybrkaknc.easyandroid.ui
 
 import android.net.Uri
 import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,8 +19,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -26,6 +39,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -44,6 +58,8 @@ import com.aybrkaknc.easyandroid.core.Sh
 import com.aybrkaknc.easyandroid.core.Stage
 import com.aybrkaknc.easyandroid.core.timestamp
 import com.aybrkaknc.easyandroid.job.Jobs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
 
 private fun removalId(removal: Removal?): Int = when (removal) {
@@ -56,6 +72,27 @@ private fun removalId(removal: Removal?): Int = when (removal) {
 
 internal val AppInfo.active get() = installed && enabled
 
+/** From safe to dangerous, so a glance at the list tells how careful to be. */
+private fun removalColor(removal: Removal?): Color = when (removal) {
+    Removal.RECOMMENDED -> Color(0xFF2EB67D)
+    Removal.ADVANCED -> Color(0xFFE5B83A)
+    Removal.EXPERT -> Color(0xFFF28C38)
+    Removal.UNSAFE -> Color(0xFFFF5A5F)
+    null -> Color(0xFF9AA0A6)
+}
+
+@Composable
+private fun ColorChip(selected: Boolean, color: Color, onClick: () -> Unit, label: @Composable () -> Unit) {
+    FilterChip(
+        selected, onClick, label,
+        leadingIcon = { Box(Modifier.size(8.dp).background(color, CircleShape)) },
+        colors = FilterChipDefaults.filterChipColors(selectedContainerColor = color.copy(alpha = 0.25f), selectedLabelColor = color),
+        border = FilterChipDefaults.filterChipBorder(
+            enabled = true, selected = selected, borderColor = color.copy(alpha = 0.4f), selectedBorderColor = color,
+        ),
+    )
+}
+
 @Composable
 fun DebloatScreen(model: MainViewModel) {
     val apps by model.apps.collectAsStateWithLifecycle()
@@ -67,6 +104,22 @@ fun DebloatScreen(model: MainViewModel) {
     var plan by remember { mutableStateOf<List<ProfileEntry>?>(null) }
     var info by remember { mutableStateOf<AppInfo?>(null) }
 
+    var menu by remember { mutableStateOf(false) }
+    val save = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        val entries = removedProfile(model.apps.value.orEmpty())
+        if (uri != null) model.run { saveProfile(uri, entries) }
+    }
+    val load = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) model.run {
+            val text = Env.app.contentResolver.openInputStream(uri)?.use { it.readBytes().decodeToString() }
+                ?: throw AppException(ErrorCode.NOT_FOUND, uri.toString())
+            val known = model.apps.value.orEmpty().map { it.packageName }.toSet()
+            // Packages the new ROM does not have are left out.
+            val entries = DebloatProfile.parse(text).entries.filter { it.packageName in known }
+            withContext(Dispatchers.Main) { plan = entries }
+        }
+    }
+
     val all = apps ?: return Loading()
     val chosen = all.filter { it.packageName in selected }
     val debloat = remember { Env.debloat() }
@@ -77,15 +130,37 @@ fun DebloatScreen(model: MainViewModel) {
     }
 
     Column(Modifier.fillMaxSize()) {
-        SearchField(query) { query = it }
+        SearchField(query, menu = {
+            Box {
+                IconButton({ menu = true }) { Icon(Icons.Default.MoreVert, stringResource(R.string.more_options)) }
+                DropdownMenu(menu, { menu = false }) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.profile_save_state)) },
+                        onClick = {
+                            menu = false
+                            save.launch("easyandroid-debloat.json")
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.profile_load)) },
+                        onClick = {
+                            menu = false
+                            load.launch(arrayOf("*/*"))
+                        },
+                    )
+                }
+            }
+        }) { query = it }
         Row(
             Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            FilterChip(removed, { removed = !removed; selected = emptySet() }, { Text(stringResource(R.string.show_removed)) })
+            ColorChip(removed, Category.SYSTEM, { removed = !removed; selected = emptySet() }) { Text(stringResource(R.string.show_removed)) }
             FilterChip(everything, { everything = true }, { Text(stringResource(R.string.all)) })
             (Removal.entries + null).forEach { item ->
-                FilterChip(!everything && level == item, { level = item; everything = false }, { Text(stringResource(removalId(item))) })
+                ColorChip(!everything && level == item, removalColor(item), { level = item; everything = false }) {
+                    Text(stringResource(removalId(item)))
+                }
             }
         }
         if (chosen.isNotEmpty()) {
@@ -108,6 +183,7 @@ fun DebloatScreen(model: MainViewModel) {
                     detail = listOf(stringResource(removalId(app.debloat?.removal)), app.debloat?.list.orEmpty(), state)
                         .filter { it.isNotEmpty() }.joinToString("  "),
                     checked = app.packageName in selected,
+                    detailColor = removalColor(app.debloat?.removal),
                     enabled = !app.active || !debloat.isProtected(app.packageName),
                     onClick = { info = app },
                 ) { selected = selected.toggle(app.packageName) }
@@ -163,7 +239,7 @@ fun DebloatScreen(model: MainViewModel) {
     }
 }
 
-/** Shows what will run and asks for confirmation. Used by the debloat tab and by settings. */
+/** Shows what will run and asks for confirmation. */
 @Composable
 fun DebloatPlanDialog(entries: List<ProfileEntry>, apps: List<AppInfo>, onDismiss: () -> Unit, onConfirm: () -> Unit) {
     ConfirmDialog(

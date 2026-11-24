@@ -16,6 +16,9 @@ enum class RootState { CHECKING, GRANTED, MISSING }
 class MainViewModel : ViewModel() {
     val root = MutableStateFlow(RootState.CHECKING)
 
+    /** Version of the root manager, if it tells. */
+    val rootVersion = MutableStateFlow<String?>(null)
+
     /** Null while loading. */
     val apps = MutableStateFlow<List<AppInfo>?>(null)
     val backups = MutableStateFlow<StoredBackups?>(null)
@@ -30,7 +33,12 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             val granted = withContext(Dispatchers.IO) { SuRoot.retry() }
             root.value = if (granted) RootState.GRANTED else RootState.MISSING
-            if (granted) refresh()
+            if (granted) {
+                refresh()
+                rootVersion.value = withContext(Dispatchers.IO) {
+                    runCatching { SuRoot.run("su -v").out.lines().first().trim().ifEmpty { null } }.getOrNull()
+                }
+            }
         }
     }
 

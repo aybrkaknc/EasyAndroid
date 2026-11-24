@@ -49,16 +49,41 @@ class SystemBackup(private val shell: Root, private val store: BackupStore) {
         wifi: Boolean,
         device: DeviceSnapshot,
         now: OffsetDateTime = OffsetDateTime.now(),
-    ): String {
+    ): String = save(available(settings, roles, wifi), device, now)
+
+    /** What the phone has now, for the user to choose from. Values of settings are the current ones. */
+    fun available(settings: Boolean = true, roles: Boolean = true, wifi: Boolean = true): List<SystemItem> {
+        val items = ArrayList<SystemItem>()
+        if (settings) {
+            for (namespace in NAMESPACES) {
+                currentSettings(namespace).filterKeys(::isRestorable)
+                    .forEach { (key, value) -> items += SystemItem.Setting(namespace, key, value, null) }
+            }
+        }
+        if (roles) {
+            for (role in ROLES) holders(role).forEach { items += SystemItem.Role(role, it, null) }
+        }
+        if (wifi) savedNetworks().forEach { items += SystemItem.Wifi(it) }
+        return items
+    }
+
+    /** Writes the chosen [items] as a system backup file and returns its name. */
+    fun save(items: List<SystemItem>, device: DeviceSnapshot, now: OffsetDateTime = OffsetDateTime.now()): String {
         store.ensureRoot()
+        val settings = items.filterIsInstance<SystemItem.Setting>()
+            .filter { it.namespace in NAMESPACES && isRestorable(it.key) }
+            .groupBy({ it.namespace }, { it.key to it.value }).mapValues { it.value.toMap() }
+        val roles = items.filterIsInstance<SystemItem.Role>()
+            .filter { it.role in ROLES && Sh.isPackage(it.packageName) }
+            .groupBy({ it.role }, { it.packageName })
         val snapshot = SystemSnapshot(
             format = SystemSnapshot.FORMAT,
             version = 1,
             createdAt = timestamp(now),
             device = device,
-            settings = if (settings) NAMESPACES.associateWith { currentSettings(it).filterKeys(::isRestorable) } else emptyMap(),
-            roles = if (roles) ROLES.associateWith(::holders).filterValues { it.isNotEmpty() } else emptyMap(),
-            wifi = if (wifi) savedNetworks() else emptyList(),
+            settings = settings,
+            roles = roles,
+            wifi = items.filterIsInstance<SystemItem.Wifi>().map { it.network },
         )
         val name = folderName("system", now) + ".json"
         store.writeText(store.dir(name), snapshot.encode())

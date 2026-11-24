@@ -86,6 +86,7 @@ object Jobs {
             } finally {
                 if (lock.isHeld) lock.release()
                 flow.update { it?.copy(finished = true, index = it.results.size) }
+                flow.value?.let { ReportLog.add(app, it) }
                 after()
             }
         }

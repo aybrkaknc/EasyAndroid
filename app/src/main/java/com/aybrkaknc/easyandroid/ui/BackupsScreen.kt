@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -19,6 +20,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +42,8 @@ import com.aybrkaknc.easyandroid.core.FileKind
 import com.aybrkaknc.easyandroid.core.RestoreOptions
 import com.aybrkaknc.easyandroid.core.StoredBackup
 import com.aybrkaknc.easyandroid.core.SuRoot
+import com.aybrkaknc.easyandroid.core.SystemItem
+import com.aybrkaknc.easyandroid.core.SystemSnapshot
 import com.aybrkaknc.easyandroid.core.parseTimestamp
 import com.aybrkaknc.easyandroid.job.Jobs
 import com.aybrkaknc.easyandroid.job.UiText
@@ -62,8 +66,14 @@ private fun StoredBackup.contents(): String {
     return parts.joinToString("  ")
 }
 
+/** What another screen wants to see in the Backups tab. */
+sealed interface BackupsRequest {
+    data class Select(val ids: Set<String>) : BackupsRequest
+    data object System : BackupsRequest
+}
+
 @Composable
-fun BackupsScreen(model: MainViewModel) {
+fun BackupsScreen(model: MainViewModel, request: BackupsRequest?, onRequestHandled: () -> Unit) {
     val context = LocalContext.current
     val stored by model.backups.collectAsStateWithLifecycle()
     val apps by model.apps.collectAsStateWithLifecycle()
@@ -72,6 +82,8 @@ fun BackupsScreen(model: MainViewModel) {
     var choosing by remember { mutableStateOf(false) }
     var conflicts by remember { mutableStateOf<Conflicts?>(null) }
     var deleting by remember { mutableStateOf<List<String>?>(null) }
+    var systemDiff by remember { mutableStateOf<List<SystemItem>?>(null) }
+    var systemLoading by remember { mutableStateOf(false) }
 
     val export = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
         val id = selected.singleOrNull()
@@ -81,7 +93,31 @@ fun BackupsScreen(model: MainViewModel) {
         if (uri != null) startImport(model, uri)
     }
 
+    val listState = rememberLazyListState()
+    LaunchedEffect(request, stored) {
+        val ready = stored ?: return@LaunchedEffect
+        when (request) {
+            null -> return@LaunchedEffect
+            is BackupsRequest.Select -> {
+                query = ""
+                selected = request.ids
+            }
+            BackupsRequest.System -> {
+                query = ""
+                if (ready.systemSnapshots.isNotEmpty()) listState.scrollToItem(ready.backups.size + ready.broken.size)
+            }
+        }
+        onRequestHandled()
+    }
+
+    systemDiff?.let { items ->
+        return DiffScreen(items, onBack = { systemDiff = null }) { chosen ->
+            systemDiff = null
+            startApply(chosen)
+        }
+    }
     val list = stored ?: return Loading()
+    if (systemLoading) return Loading()
     val visible = list.backups.filter {
         query.isBlank() || it.title.contains(query, true) || it.manifest.packageName.contains(query, true)
     }
@@ -107,10 +143,10 @@ fun BackupsScreen(model: MainViewModel) {
                 }
             }
         }
-        if (list.backups.isEmpty() && list.broken.isEmpty()) {
+        if (list.backups.isEmpty() && list.broken.isEmpty() && list.systemSnapshots.isEmpty()) {
             Empty(stringResource(R.string.no_backups))
         } else {
-            LazyColumn(Modifier.weight(1f)) {
+            LazyColumn(Modifier.weight(1f), listState) {
                 items(visible, key = { it.id }) { backup ->
                     SelectRow(
                         packageName = backup.manifest.packageName,
@@ -127,6 +163,26 @@ fun BackupsScreen(model: MainViewModel) {
                             Text(stringResource(R.string.incomplete), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
                         }
                         TextButton({ deleting = listOf(id) }) { Text(stringResource(R.string.delete)) }
+                    }
+                }
+                if (list.systemSnapshots.isNotEmpty()) {
+                    item(key = "system-header") { SettingsHeader(stringResource(R.string.system_saved)) }
+                    items(list.systemSnapshots, key = { it }) { name ->
+                        SettingRow(name) {
+                            Row {
+                                TextButton({
+                                    systemLoading = true
+                                    model.run {
+                                        try {
+                                            systemDiff = Env.system().diff(SystemSnapshot.parse(Env.store().readText(name)))
+                                        } finally {
+                                            systemLoading = false
+                                        }
+                                    }
+                                }) { Text(stringResource(R.string.restore)) }
+                                TextButton({ deleting = listOf(name) }) { Text(stringResource(R.string.delete)) }
+                            }
+                        }
                     }
                 }
             }

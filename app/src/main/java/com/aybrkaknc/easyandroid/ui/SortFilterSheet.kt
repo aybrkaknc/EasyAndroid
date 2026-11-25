@@ -35,10 +35,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -96,13 +94,7 @@ private fun FilterGroup(@StringRes title: Int, content: @Composable () -> Unit) 
     }
 }
 
-@Composable
-private fun SoonChip(@StringRes text: Int, selected: Boolean = false) {
-    val context = LocalContext.current
-    FilterChip(selected, { showSoon(context) }, { Text(stringResource(text)) }, Modifier.alpha(0.4f))
-}
-
-/** Sorting and the enabled filter of the app list. Favorites and labels do not exist here yet. */
+/** Sorting and the enabled filter of the app list. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SortFilterSheet(sort: AppSort, filter: EnabledFilter, onDismiss: () -> Unit, onApply: (AppSort, EnabledFilter) -> Unit) {
@@ -125,16 +117,6 @@ fun SortFilterSheet(sort: AppSort, filter: EnabledFilter, onDismiss: () -> Unit,
                     pendingSort = AppSort.NAME
                     pendingFilter = EnabledFilter.ALL
                 }) { Text(stringResource(R.string.sheet_reset), color = MaterialTheme.colorScheme.error) }
-            }
-            FilterGroup(R.string.filter_favorites) {
-                FilterChip(true, {}, { Text(stringResource(R.string.all)) })
-                SoonChip(R.string.filter_fav)
-                SoonChip(R.string.filter_not_fav)
-            }
-            FilterGroup(R.string.filter_labels) {
-                FilterChip(true, {}, { Text(stringResource(R.string.all)) })
-                SoonChip(R.string.filter_labelled)
-                SoonChip(R.string.filter_not_labelled)
             }
             FilterGroup(R.string.filter_enabled) {
                 FilterChip(pendingFilter == EnabledFilter.ALL, { pendingFilter = EnabledFilter.ALL }, { Text(stringResource(R.string.all)) })

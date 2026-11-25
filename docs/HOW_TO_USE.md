@@ -15,11 +15,12 @@ EasyAndroid backs up, restores and debloats apps on a rooted Android phone, with
 3. [Back up apps](#back-up-apps)
 4. [Restore apps](#restore-apps)
 5. [System backup](#system-backup)
-6. [Debloat](#debloat)
-7. [Wireless debugging and EasyADB](#wireless-debugging-and-easyadb)
-8. [Moving backups to a PC](#moving-backups-to-a-pc)
-9. [Settings](#settings)
-10. [Good to know](#good-to-know)
+6. [Media, folders, messages, call logs and wallpapers](#media-folders-messages-call-logs-and-wallpapers)
+7. [Debloat](#debloat)
+8. [Wireless debugging and EasyADB](#wireless-debugging-and-easyadb)
+9. [Moving backups to a PC](#moving-backups-to-a-pc)
+10. [Settings](#settings)
+11. [Good to know](#good-to-know)
 
 ## Before you start
 
@@ -30,21 +31,20 @@ EasyAndroid backs up, restores and debloats apps on a rooted Android phone, with
 ## Home
 
 * **Overview:** free internal storage (the arrow opens the backup folder settings), root status with the version of your root manager, and Wireless debugging.
-* **Category chips:** Apps and System scroll to their sections, WiFi opens the system backup chooser. Messages, Call Logs, Folders and Wallpapers are not available yet and show "Coming soon".
+* **Category chips:** Apps and System scroll to their sections, WiFi opens the system backup chooser. Messages, Call Logs, Folders and Wallpapers open their lists in **Restore**.
 * **Quick actions:** cards you can pin. Open **More quick actions** to see all of them and pin the ones you use. The pin icon on a card adds or removes it from Home.
 
 ## Back up apps
 
 * **Back up all apps** backs up every app except the ones the phone cannot do without (System UI, Settings, Shell, EasyAndroid itself and packages the UAD-NG list marks as unsafe). Choose what to include in the dialog: app data, OBB files, `Android/data` and compression. The dialog tells you how many system apps are included. Data is only consistent when an app is closed, so the selected apps are closed while they are backed up.
-* **Back up selected apps** lets you pick apps one by one.
 * **Pending**, **updated** and **redo** cards pick the apps for you: apps without a backup, apps whose installed version is newer than their backup, and apps that already have a backup.
 * Every file is stored with a SHA-256 checksum and the manifest is written last, so a backup that was cut short is marked as incomplete.
 
 ## Restore apps
 
-Open **Backups** (or use **Restore** cards on Home with **From device**).
+Open **Restore** (or use **Restore** cards on Home with **From device**).
 
-* The Home cards **Restore all apps**, **Restore missing apps** and **Restore new versions** open Backups with the matching backups already ticked. Press **Restore** to continue.
+* The Home cards **Restore all apps**, **Restore missing apps** and **Restore new versions** open Restore with the matching backups already ticked. Press **Restore** to continue.
 * Choose what to restore: the app, its data, OBB files and permissions. If an app is already installed you can overwrite it or skip it, for one app or for all.
 * Every checksum is verified before anything on the phone changes.
 * Restore your apps first and the system backup after them, because default apps need their packages to exist.
@@ -54,8 +54,17 @@ Open **Backups** (or use **Restore** cards on Home with **From device**).
 Open **Back up system** on Home.
 
 * Pick settings, default apps and Wi-Fi networks one by one, or a whole group at once. Wi-Fi networks are not selected by default because their passwords are saved without encryption in the backup folder.
-* Saved system backups are listed in **Backups**. **Restore** shows only what differs from the phone. Settings that mean the same on every ROM are ticked, the rest may belong to the old ROM and are left for you to choose.
+* Saved system backups are listed in **Restore**. **Restore** shows only what differs from the phone. Settings that mean the same on every ROM are ticked, the rest may belong to the old ROM and are left for you to choose.
 * Identity, security and state settings (such as device IDs, lock screen and SIM settings) are never saved or restored.
+
+## Media, folders, messages, call logs and wallpapers
+
+These are saved as copies of files, one backup for each time, and listed under their own chip in **Restore**.
+
+* **Media:** in the backup options of an app backup, tap **Media** and choose folders of shared storage. They are saved after the apps.
+* **Folders:** open **Folders** in **Restore** and tap **Choose folders and back up**. The Android folder and the backup folder are never included.
+* **Messages**, **Call logs** and **Wallpapers:** open their chip in **Restore** and tap **Back up now**. The database or wallpaper files are copied as they are, so single messages or calls cannot be picked.
+* **Restore** replaces the current files with the ones in the backup. Restore messages and call logs only on the same Android version and ROM, and expect to restart the phone before a restored wallpaper shows.
 
 ## Debloat
 
@@ -73,7 +82,7 @@ Open **Back up system** on Home.
 ## Moving backups to a PC
 
 * Copy `EasyAndroid/Backups` from the internal storage to the PC before you format the phone, and copy it back after the new ROM is installed. EasyADB can open the folder directly.
-* A single backup can be exported as one `.easybckp` file from **Backups** and imported again with **Import .easybckp**.
+* A single backup can be exported as one `.easybckp` file from **Restore** and imported again with **Import .easybckp**.
 * Uncompressed backups use EasyADB's format in both directions. zstd compressed backups are smaller but EasyADB cannot read them yet.
 
 ## Settings
@@ -90,6 +99,5 @@ Open **Back up system** on Home.
 * Apps that tie their data to the phone with the Android Keystore, such as banking apps and authenticators, may ask you to sign in again after a restore.
 * Restoring Wi-Fi networks needs Android 11 or newer. Enterprise and WEP networks are not saved.
 * A custom backup folder has to be on internal storage or an SD card. Cloud folders have no path that root commands could use.
-* Messages, call logs, folders and wallpapers are planned and not available yet.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

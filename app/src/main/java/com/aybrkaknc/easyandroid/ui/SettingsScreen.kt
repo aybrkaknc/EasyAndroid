@@ -65,7 +65,7 @@ private fun ThemeMode.title(): Int = when (this) {
 
 /** Settings in groups, like the app they follow: each row opens a page, a dialog or another app. */
 @Composable
-fun SettingsScreen(model: MainViewModel, onPage: (SettingsPage) -> Unit, onSystemBackup: () -> Unit) {
+fun SettingsScreen(model: MainViewModel, onPage: (SettingsPage) -> Unit, onSystemBackup: () -> Unit, onSegment: (BackupsSegment) -> Unit) {
     val context = LocalContext.current
     val settings by Env.prefs.state.collectAsStateWithLifecycle()
     val root by model.root.collectAsStateWithLifecycle()
@@ -128,11 +128,13 @@ fun SettingsScreen(model: MainViewModel, onPage: (SettingsPage) -> Unit, onSyste
                 )
                 2 -> SettingCard(
                     stringResource(R.string.content_messages), shape, summary = stringResource(R.string.content_messages_text),
-                    icon = painterResource(R.drawable.ic_message), tint = Category.MESSAGES, soon = true,
+                    icon = painterResource(R.drawable.ic_message), tint = Category.MESSAGES,
+                    enabled = root == RootState.GRANTED, onClick = { onSegment(BackupsSegment.MESSAGES) },
                 )
                 else -> SettingCard(
                     stringResource(R.string.content_calls), shape, summary = stringResource(R.string.content_calls_text),
-                    icon = rememberVectorPainter(Icons.Default.Call), tint = Category.CALLS, soon = true,
+                    icon = rememberVectorPainter(Icons.Default.Call), tint = Category.CALLS,
+                    enabled = root == RootState.GRANTED, onClick = { onSegment(BackupsSegment.CALLS) },
                 )
             }
         }
@@ -160,18 +162,11 @@ fun SettingsScreen(model: MainViewModel, onPage: (SettingsPage) -> Unit, onSyste
         }
 
         SettingsHeader(stringResource(R.string.settings_group_notifications))
-        CardGroup(2) { index, shape ->
-            if (index == 0) {
-                SettingCard(
-                    stringResource(R.string.notif_app), shape, summary = stringResource(R.string.notif_app_text),
-                    icon = rememberVectorPainter(Icons.Default.Notifications), tint = Amber, onClick = { notificationSettings(context) },
-                )
-            } else {
-                SettingCard(
-                    stringResource(R.string.notif_sound), shape, summary = stringResource(R.string.notif_sound_text),
-                    icon = rememberVectorPainter(Icons.Default.Notifications), tint = Amber, soon = true,
-                )
-            }
+        CardGroup(1) { _, shape ->
+            SettingCard(
+                stringResource(R.string.notif_app), shape, summary = stringResource(R.string.notif_app_text),
+                icon = rememberVectorPainter(Icons.Default.Notifications), tint = Amber, onClick = { notificationSettings(context) },
+            )
         }
 
         SettingsHeader(stringResource(R.string.settings_group_advanced))

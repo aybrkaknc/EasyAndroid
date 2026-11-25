@@ -38,6 +38,7 @@ import com.aybrkaknc.easyandroid.Env
 import com.aybrkaknc.easyandroid.MainViewModel
 import com.aybrkaknc.easyandroid.R
 import com.aybrkaknc.easyandroid.core.BackupOptions
+import com.aybrkaknc.easyandroid.core.FileSetKind
 import com.aybrkaknc.easyandroid.core.Sh
 import com.aybrkaknc.easyandroid.core.parseTimestamp
 import com.aybrkaknc.easyandroid.job.Jobs
@@ -152,11 +153,11 @@ fun AppsScreen(model: MainViewModel, preselected: Set<String> = emptySet()) {
             selected.size,
             onDismiss = { asking = false },
             note = if (system > 0) stringResource(R.string.quick_system_note, system) else null,
-        ) { options ->
+        ) { options, media ->
             asking = false
             val chosen = all.filter { it.packageName in selected }
             selected = emptySet()
-            startBackup(model, chosen, options)
+            startBackup(model, chosen, options, media)
         }
     }
     if (sorting) {
@@ -168,10 +169,30 @@ fun AppsScreen(model: MainViewModel, preselected: Set<String> = emptySet()) {
     }
 }
 
-fun startBackup(model: MainViewModel, apps: List<AppInfo>, options: BackupOptions) {
+private sealed interface BackupItem {
+    data class App(val app: AppInfo) : BackupItem
+    data class Media(val folders: List<String>) : BackupItem
+}
+
+/** Backs up [apps] one after the other, then the shared storage [mediaFolders] if there are any. */
+fun startBackup(model: MainViewModel, apps: List<AppInfo>, options: BackupOptions, mediaFolders: List<String> = emptyList()) {
     val engine = Env.backups()
+    val files = Env.files()
     val device by lazy { engine.snapshot() }
-    Jobs.start(Env.app, R.string.job_backup, apps, { it.label }, after = { model.refreshBackups() }) { app, task ->
-        engine.backup(app.packageName, app.label, options, device, task).notes.map(::noteText)
+    val items = apps.map { BackupItem.App(it) } + listOfNotNull(mediaFolders.takeIf { it.isNotEmpty() }?.let { BackupItem.Media(it) })
+    val name = { item: BackupItem ->
+        when (item) {
+            is BackupItem.App -> item.app.label
+            is BackupItem.Media -> Env.app.getString(R.string.kind_media)
+        }
+    }
+    Jobs.start(Env.app, R.string.job_backup, items, name, after = { model.refreshBackups() }) { item, task ->
+        when (item) {
+            is BackupItem.App -> engine.backup(item.app.packageName, item.app.label, options, device, task).notes.map(::noteText)
+            is BackupItem.Media -> {
+                files.backup(FileSetKind.MEDIA, item.folders, device, task)
+                emptyList()
+            }
+        }
     }
 }

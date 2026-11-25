@@ -28,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -43,11 +42,10 @@ fun SearchScreen(
     onApps: () -> Unit,
     onSystemBackup: () -> Unit,
     onAction: (QuickAction) -> Unit,
+    onSegment: (BackupsSegment) -> Unit,
 ) {
-    val context = LocalContext.current
     val apps by model.apps.collectAsStateWithLifecycle()
     var query by rememberSaveable { mutableStateOf("") }
-    val soon: () -> Unit = { showSoon(context) }
     val matches = apps.orEmpty().filter {
         it.installed && !it.system && (query.isBlank() || it.label.contains(query, true) || it.packageName.contains(query, true))
     }.take(30)
@@ -59,10 +57,10 @@ fun SearchScreen(
             CapsLabel(stringResource(R.string.search_shortcuts), Modifier.padding(bottom = 12.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 CategoryChip(painterResource(R.drawable.ic_android), stringResource(R.string.chip_apps), Category.BACKUP, onClick = onApps)
-                CategoryChip(painterResource(R.drawable.ic_message), stringResource(R.string.chip_messages), Category.MESSAGES, soon = true, onClick = soon)
-                CategoryChip(rememberVectorPainter(Icons.Default.Call), stringResource(R.string.chip_calls), Category.CALLS, soon = true, onClick = soon)
-                CategoryChip(painterResource(R.drawable.ic_folder), stringResource(R.string.chip_folders), Category.FOLDERS, soon = true, onClick = soon)
-                CategoryChip(painterResource(R.drawable.ic_wallpaper), stringResource(R.string.chip_wallpapers), Category.WALLPAPERS, soon = true, onClick = soon)
+                CategoryChip(painterResource(R.drawable.ic_message), stringResource(R.string.chip_messages), Category.MESSAGES) { onSegment(BackupsSegment.MESSAGES) }
+                CategoryChip(rememberVectorPainter(Icons.Default.Call), stringResource(R.string.chip_calls), Category.CALLS) { onSegment(BackupsSegment.CALLS) }
+                CategoryChip(painterResource(R.drawable.ic_folder), stringResource(R.string.chip_folders), Category.FOLDERS) { onSegment(BackupsSegment.FOLDERS) }
+                CategoryChip(painterResource(R.drawable.ic_wallpaper), stringResource(R.string.chip_wallpapers), Category.WALLPAPERS) { onSegment(BackupsSegment.WALLPAPERS) }
                 CategoryChip(painterResource(R.drawable.ic_wifi), stringResource(R.string.chip_wifi), Category.WIFI, onClick = onSystemBackup)
                 CategoryChip(rememberVectorPainter(Icons.Default.Build), stringResource(R.string.tab_system), Category.SYSTEM, onClick = onSystemBackup)
             }

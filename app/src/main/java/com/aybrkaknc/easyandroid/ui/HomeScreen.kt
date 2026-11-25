@@ -74,6 +74,7 @@ fun HomeScreen(
     onSystemRestore: () -> Unit,
     onStorage: () -> Unit,
     onSearch: () -> Unit,
+    onSegment: (BackupsSegment) -> Unit,
 ) {
     val root by model.root.collectAsStateWithLifecycle()
     val settings by Env.prefs.state.collectAsStateWithLifecycle()
@@ -105,6 +106,7 @@ fun HomeScreen(
                 onApps = { scope.launch { scroll.animateScrollTo(appsY) } },
                 onSystemSection = { scope.launch { scroll.animateScrollTo(systemY) } },
                 onWifi = { if (granted) onSystem() },
+                onSegment = onSegment,
             )
         }
 
@@ -144,20 +146,23 @@ fun HomeScreen(
             }
         }
 
-        SoonSection(
+        FileSection(
             painterResource(R.drawable.ic_message), R.string.section_messages,
             R.string.action_messages_backup, R.string.action_messages_backup_text,
             R.string.action_messages_restore, R.string.action_messages_restore_text,
+            granted, { onSegment(BackupsSegment.MESSAGES) }, onEasyAdb,
         )
-        SoonSection(
+        FileSection(
             rememberVectorPainter(Icons.Default.Call), R.string.section_calls,
             R.string.action_calls_backup, R.string.action_calls_backup_text,
             R.string.action_calls_restore, R.string.action_calls_restore_text,
+            granted, { onSegment(BackupsSegment.CALLS) }, onEasyAdb,
         )
-        SoonSection(
+        FileSection(
             painterResource(R.drawable.ic_folder), R.string.section_folders,
             R.string.action_folders_backup, R.string.action_folders_backup_text,
             R.string.action_folders_restore, R.string.action_folders_restore_text,
+            granted, { onSegment(BackupsSegment.FOLDERS) }, onEasyAdb,
         )
     }
 }
@@ -235,42 +240,41 @@ private fun RootStatus(model: MainViewModel, root: RootState) {
 }
 
 @Composable
-private fun Chips(onApps: () -> Unit, onSystemSection: () -> Unit, onWifi: () -> Unit) {
-    val context = LocalContext.current
-    val soon: () -> Unit = { showSoon(context) }
+private fun Chips(onApps: () -> Unit, onSystemSection: () -> Unit, onWifi: () -> Unit, onSegment: (BackupsSegment) -> Unit) {
     FlowRow(
         Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         CategoryChip(painterResource(R.drawable.ic_android), stringResource(R.string.chip_apps), Category.BACKUP, onClick = onApps)
-        CategoryChip(painterResource(R.drawable.ic_message), stringResource(R.string.chip_messages), Category.MESSAGES, soon = true, onClick = soon)
-        CategoryChip(rememberVectorPainter(Icons.Default.Call), stringResource(R.string.chip_calls), Category.CALLS, soon = true, onClick = soon)
-        CategoryChip(painterResource(R.drawable.ic_folder), stringResource(R.string.chip_folders), Category.FOLDERS, soon = true, onClick = soon)
-        CategoryChip(painterResource(R.drawable.ic_wallpaper), stringResource(R.string.chip_wallpapers), Category.WALLPAPERS, soon = true, onClick = soon)
+        CategoryChip(painterResource(R.drawable.ic_message), stringResource(R.string.chip_messages), Category.MESSAGES) { onSegment(BackupsSegment.MESSAGES) }
+        CategoryChip(rememberVectorPainter(Icons.Default.Call), stringResource(R.string.chip_calls), Category.CALLS) { onSegment(BackupsSegment.CALLS) }
+        CategoryChip(painterResource(R.drawable.ic_folder), stringResource(R.string.chip_folders), Category.FOLDERS) { onSegment(BackupsSegment.FOLDERS) }
+        CategoryChip(painterResource(R.drawable.ic_wallpaper), stringResource(R.string.chip_wallpapers), Category.WALLPAPERS) { onSegment(BackupsSegment.WALLPAPERS) }
         CategoryChip(painterResource(R.drawable.ic_wifi), stringResource(R.string.chip_wifi), Category.WIFI, onClick = onWifi)
         CategoryChip(rememberVectorPainter(Icons.Default.Build), stringResource(R.string.tab_system), Category.SYSTEM, onClick = onSystemSection)
     }
 }
 
-/** A section of a feature that does not exist yet. */
+/** A section of files that are backed up from their own segment of the Backups tab, which both cards open. */
 @Composable
-private fun SoonSection(
+private fun FileSection(
     icon: Painter,
     @StringRes title: Int,
     @StringRes backup: Int,
     @StringRes backupText: Int,
     @StringRes restore: Int,
     @StringRes restoreText: Int,
+    enabled: Boolean,
+    onOpen: () -> Unit,
+    onEasyAdb: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val soon: () -> Unit = { showSoon(context) }
     SectionLabel(icon, stringResource(title))
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        QuickCard(stringResource(backup), stringResource(backupText), groupShape(0, 2), soon = true, onClick = soon)
+        QuickCard(stringResource(backup), stringResource(backupText), groupShape(0, 2), enabled = enabled, onClick = onOpen)
         QuickCard(
-            stringResource(restore), stringResource(restoreText), groupShape(1, 2), soon = true, onClick = soon,
-            buttons = listOf(CardButton(R.string.from_device, soon), CardButton(R.string.with_easyadb, soon)),
+            stringResource(restore), stringResource(restoreText), groupShape(1, 2), enabled = enabled, root = true,
+            buttons = listOf(CardButton(R.string.from_device, onOpen), CardButton(R.string.with_easyadb, onEasyAdb)),
         )
     }
 }

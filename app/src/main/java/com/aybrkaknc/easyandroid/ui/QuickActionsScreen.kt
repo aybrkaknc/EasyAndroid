@@ -28,7 +28,6 @@ fun QuickActionCard(
     onAction: (QuickAction) -> Unit,
     onEasyAdb: () -> Unit,
 ) {
-    val context = LocalContext.current
     val device = when (action.buttons) {
         QuickButtons.NONE -> null
         QuickButtons.TO -> R.string.to_device
@@ -38,8 +37,7 @@ fun QuickActionCard(
         title = stringResource(action.title),
         text = stringResource(action.text),
         shape = shape,
-        enabled = enabled || action.soon,
-        soon = action.soon,
+        enabled = enabled,
         root = action.root,
         danger = action.buttons == QuickButtons.DELETE,
         buttons = if (device == null) emptyList() else listOf(
@@ -48,11 +46,7 @@ fun QuickActionCard(
         ),
         pinned = pinned,
         onPin = { Env.prefs.togglePinned(action.id) },
-        onClick = when {
-            action.soon -> ({ showSoon(context) })
-            device == null -> ({ onAction(action) })
-            else -> null
-        },
+        onClick = if (device == null) ({ onAction(action) }) else null,
     )
 }
 

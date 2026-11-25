@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="tab_home">Ana Sayfa</string>
-    <string name="tab_backups">Yedekler</string>
+    <string name="tab_backups">Geri Yükle</string>
     <string name="tab_debloat">Debloat</string>
     <string name="tab_system">Sistem</string>
     <string name="tab_settings">Ayarlar</string>
@@ -38,7 +38,6 @@
     <string name="to_device">Cihaza</string>
     <string name="from_device">Cihazdan</string>
     <string name="with_easyadb">EasyADB ile</string>
-    <string name="coming_soon">Yakında</string>
     <string name="nothing_to_do">Bu işleme uyan bir şey yok.</string>
     <string name="pin">Ana Sayfa\'ya sabitle</string>
     <string name="unpin">Ana Sayfa\'dan kaldır</string>
@@ -48,16 +47,12 @@
 
     <string name="action_backup_all">Tüm uygulamaları yedekle</string>
     <string name="action_backup_all_text">Bu cihazdaki kurulu uygulamaları yedekler</string>
-    <string name="action_backup_select">Seçerek yedekle</string>
-    <string name="action_backup_select_text">Yedeklenecek uygulamaları siz seçersiniz</string>
     <string name="action_backup_pending">Bekleyen uygulamaları yedekle</string>
     <string name="action_backup_pending_text">Henüz yedeklenmemiş uygulamaları yedekler</string>
     <string name="action_backup_updated">Güncellenen uygulamaları yedekle</string>
     <string name="action_backup_updated_text">Bu cihazda daha yeni sürümü kurulu olan uygulamaları yedekler</string>
     <string name="action_backup_redo">Mevcut yedekleri yenile</string>
     <string name="action_backup_redo_text">Yedeği olan tüm uygulamaları yeniden yedekler</string>
-    <string name="action_sync">Son cihaz yedeklerini buluta eşitle</string>
-    <string name="action_sync_text">Uygulamaların son yedeklerini cihazdan buluta eşitler</string>
     <string name="action_restore_all">Tüm uygulamaları geri yükle</string>
     <string name="action_restore_all_text">Yedeklenmiş tüm uygulamaları geri yükler</string>
     <string name="action_restore_missing">Eksik uygulamaları geri yükle</string>
@@ -81,7 +76,7 @@
     <string name="action_calls_restore">Arama kayıtlarını geri yükle</string>
     <string name="action_calls_restore_text">Arama kayıtlarını en son yedekten geri yükler</string>
     <string name="action_folders_backup">Klasörleri yedekle</string>
-    <string name="action_folders_backup_text">Bu cihazdaki klasörlerin yedeklerini oluşturur</string>
+    <string name="action_folders_backup_text">Paylaşımlı depolamada seçtiğiniz klasörleri yedekler</string>
     <string name="action_folders_restore">Klasörleri geri yükle</string>
     <string name="action_folders_restore_text">Klasörleri en son yedeklerden geri yükler</string>
 
@@ -116,8 +111,6 @@
     <string name="advanced_restart_text">EasyAndroid\'i yeniden yükle</string>
     <string name="notif_app">Uygulama bildirimleri</string>
     <string name="notif_app_text">Bildirim kanalları</string>
-    <string name="notif_sound">Bildirim seslerini çal</string>
-    <string name="notif_sound_text">İşlem başarısı ve hatası</string>
     <string name="help_center">Yardım merkezi</string>
     <string name="help_center_text">EasyAndroid nasıl kullanılır</string>
     <string name="help_contact">İletişim</string>
@@ -140,9 +133,6 @@
     <string name="part_apk">APK\'lar</string>
     <string name="part_expansion">Genişleme (OBB)</string>
     <string name="part_media">Medya</string>
-    <string name="sheet_locations">Yedekleme konumlarını seçin</string>
-    <string name="location_device">Cihaz</string>
-    <string name="location_cloud">Bulut</string>
     <string name="sheet_backup">YEDEKLE</string>
     <string name="sheet_apply">SEÇENEKLERİ UYGULA</string>
     <string name="sheet_reset">FİLTRELERİ SIFIRLA</string>
@@ -153,27 +143,13 @@
     <string name="sort_update">Güncelleme tarihi</string>
     <string name="sort_backup_date">Yedek tarihi</string>
     <string name="sort_backup_size">Yedek boyutu</string>
-    <string name="filter_favorites">Favoriler</string>
-    <string name="filter_fav">Favoriler</string>
-    <string name="filter_not_fav">Favori olmayanlar</string>
-    <string name="filter_labels">Uygulama etiketleri</string>
-    <string name="filter_labelled">Etiketli</string>
-    <string name="filter_not_labelled">Etiketsiz</string>
     <string name="filter_enabled">Etkin durumu</string>
     <string name="filter_enabled_on">Etkin</string>
     <string name="filter_enabled_off">Devre dışı</string>
     <string name="search_shortcuts">KISAYOLLAR</string>
     <string name="search_quick">HIZLI İŞLEMLER</string>
     <string name="search_apps">UYGULAMALAR</string>
-    <string name="placeholder_selected">0 / 0 seçili</string>
-    <string name="placeholder_text">Yakında. Bunun yedeklenmesi sonra eklenecek.</string>
     <string name="backup_options">Yedekleme seçenekleri</string>
-    <string name="folders_local">Yerel klasör ayarları</string>
-    <string name="folders_cloud">Bulut yedekleri</string>
-    <string name="folders_empty">Cihazda klasör ayarı bulunamadı. Oluşturmak için aşağıya dokunun.</string>
-    <string name="folders_cloud_empty">Bulut yedeği yok.</string>
-    <string name="folders_new">Yeni klasör ayarı</string>
-    <string name="folders_from_cloud">Bulut\'tan klasör ayarlarını kopyala</string>
     <string name="settings_theme">Tema</string>
     <string name="more_options">Diğer seçenekler</string>
     <string name="theme_system">Sistem</string>
@@ -311,6 +287,21 @@
     <string name="stage_apk">Uygulama</string>
     <string name="stage_obb">OBB</string>
     <string name="stage_data">Veri</string>
+    <string name="stage_files">Dosyalar</string>
+    <string name="kind_media">Medya</string>
+    <string name="fileset_empty">Bu türde henüz yedek yok.</string>
+    <string name="fileset_backup">Şimdi yedekle</string>
+    <string name="fileset_pick">Klasör seç ve yedekle</string>
+    <string name="folder_picker_title">Klasör seçin</string>
+    <string name="folder_picker_confirm">Seç</string>
+    <string name="folder_picker_empty">Paylaşımlı depolamada klasör bulunamadı.</string>
+    <string name="folder_picker_hint">Uygulamalar ve yedek klasörü dışarıda bırakılır.</string>
+    <string name="fileset_restore_title">%1$s geri yüklensin mi?</string>
+    <string name="fileset_restore_replace">Telefondaki mevcut %1$s bu yedekle değiştirilir.</string>
+    <string name="fileset_restore_files">Telefondaki aynı adlı dosyalar değiştirilir.</string>
+    <string name="fileset_hint_wallpaper">Duvar kâğıdının görünmesi için yeniden başlatma gerekebilir.</string>
+    <string name="fileset_hint_database">Aynı Android sürümünde ve ROM\'da en iyi çalışır.</string>
+    <string name="fileset_folders_count">%1$d klasör</string>
     <string name="stage_verify">Doğrulanıyor</string>
     <string name="stage_install">Kuruluyor</string>
     <string name="stage_permissions">İzinler</string>

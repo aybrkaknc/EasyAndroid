@@ -1,7 +1,5 @@
 package com.aybrkaknc.easyandroid.ui
 
-import android.content.Context
-import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -33,7 +31,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -42,8 +39,6 @@ import androidx.compose.ui.unit.sp
 import com.aybrkaknc.easyandroid.R
 
 private const val DIM = 0.4f
-
-fun showSoon(context: Context) = Toast.makeText(context, R.string.coming_soon, Toast.LENGTH_SHORT).show()
 
 /** Always a little off the background. Some ROMs make the surface containers of the theme darker than it. */
 @Composable
@@ -84,14 +79,13 @@ fun SectionLabel(icon: Painter, title: String, hint: String? = null) {
 
 class CardButton(@param:StringRes val text: Int, val onClick: () -> Unit)
 
-/** One action. [soon] looks disabled but still reacts, [enabled] = false does not. */
+/** One action. */
 @Composable
 fun QuickCard(
     title: String,
     text: String,
     shape: Shape,
     enabled: Boolean = true,
-    soon: Boolean = false,
     root: Boolean = false,
     danger: Boolean = false,
     buttons: List<CardButton> = emptyList(),
@@ -99,7 +93,7 @@ fun QuickCard(
     onPin: () -> Unit = {},
     onClick: (() -> Unit)? = null,
 ) {
-    val dim = if (enabled && !soon) Modifier else Modifier.alpha(DIM)
+    val dim = if (enabled) Modifier else Modifier.alpha(DIM)
     Column(
         Modifier.fillMaxWidth().clip(shape).background(cardColor())
             .then(if (onClick != null) Modifier.clickable(enabled = enabled, onClick = onClick) else Modifier)
@@ -151,7 +145,7 @@ fun QuickCard(
     }
 }
 
-/** A settings row inside a group of cards. [soon] looks dimmed and only says so. */
+/** A settings row inside a group of cards. */
 @Composable
 fun SettingCard(
     title: String,
@@ -160,17 +154,14 @@ fun SettingCard(
     icon: Painter? = null,
     tint: Color = MaterialTheme.colorScheme.primary,
     enabled: Boolean = true,
-    soon: Boolean = false,
     danger: Boolean = false,
     onClick: (() -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
 ) {
-    val context = LocalContext.current
     Box(
-        Modifier.fillMaxWidth().clip(shape).background(if (danger) MaterialTheme.colorScheme.error.copy(alpha = 0.15f) else cardColor())
-            .then(if (soon) Modifier.alpha(DIM) else Modifier),
+        Modifier.fillMaxWidth().clip(shape).background(if (danger) MaterialTheme.colorScheme.error.copy(alpha = 0.15f) else cardColor()),
     ) {
-        SettingRow(title, summary, enabled, if (soon) ({ showSoon(context) }) else onClick, icon, tint, trailing)
+        SettingRow(title, summary, enabled, onClick, icon, tint, trailing)
     }
 }
 
@@ -184,9 +175,9 @@ fun CardGroup(count: Int, row: @Composable (index: Int, shape: Shape) -> Unit) {
 
 /** A pill in the color of its category. */
 @Composable
-fun CategoryChip(icon: Painter, text: String, color: Color, soon: Boolean = false, onClick: () -> Unit) {
+fun CategoryChip(icon: Painter, text: String, color: Color, onClick: () -> Unit) {
     Row(
-        Modifier.then(if (soon) Modifier.alpha(DIM) else Modifier).clip(CircleShape)
+        Modifier.clip(CircleShape)
             .background(color.copy(alpha = 0.1f)).border(1.dp, color.copy(alpha = 0.35f), CircleShape)
             .clickable(onClick = onClick).padding(4.dp),
         verticalAlignment = Alignment.CenterVertically,

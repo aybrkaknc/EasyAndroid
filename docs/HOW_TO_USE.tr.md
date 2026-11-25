@@ -15,11 +15,12 @@ EasyAndroid, root'lu bir Android telefonda PC olmadan uygulamaları yedekler, ge
 3. [Uygulamaları yedekle](#uygulamaları-yedekle)
 4. [Uygulamaları geri yükle](#uygulamaları-geri-yükle)
 5. [Sistem yedeği](#sistem-yedeği)
-6. [Debloat](#debloat)
-7. [Kablosuz hata ayıklama ve EasyADB](#kablosuz-hata-ayıklama-ve-easyadb)
-8. [Yedekleri PC'ye taşıma](#yedekleri-pcye-taşıma)
-9. [Ayarlar](#ayarlar)
-10. [Bilinmesi gerekenler](#bilinmesi-gerekenler)
+6. [Medya, klasörler, mesajlar, arama kayıtları ve duvar kâğıtları](#medya-klasörler-mesajlar-arama-kayıtları-ve-duvar-kâğıtları)
+7. [Debloat](#debloat)
+8. [Kablosuz hata ayıklama ve EasyADB](#kablosuz-hata-ayıklama-ve-easyadb)
+9. [Yedekleri PC'ye taşıma](#yedekleri-pcye-taşıma)
+10. [Ayarlar](#ayarlar)
+11. [Bilinmesi gerekenler](#bilinmesi-gerekenler)
 
 ## Başlamadan önce
 
@@ -30,21 +31,20 @@ EasyAndroid, root'lu bir Android telefonda PC olmadan uygulamaları yedekler, ge
 ## Ana Sayfa
 
 * **Genel bakış:** boş dahili depolama (ok, yedek klasörü ayarlarını açar), root durumu ve root yöneticinizin sürümü, Kablosuz hata ayıklama.
-* **Kategori çipleri:** Uygulamalar ve Sistem kendi bölümlerine kaydırır, WiFi sistem yedeği seçimini açar. Mesajlar, Arama Kayıtları, Klasörler ve Duvar Kâğıtları henüz yok ve "Yakında" der.
+* **Kategori çipleri:** Uygulamalar ve Sistem kendi bölümlerine kaydırır, WiFi sistem yedeği seçimini açar. Mesajlar, Arama Kayıtları, Klasörler ve Duvar Kâğıtları listelerini **Geri Yükle** içinde açar.
 * **Hızlı işlemler:** sabitleyebileceğiniz kartlar. Hepsini görmek ve kullandıklarınızı sabitlemek için **Daha fazla hızlı işlem**'i açın. Kartın üstündeki raptiye kartı Ana Sayfa'ya ekler veya kaldırır.
 
 ## Uygulamaları yedekle
 
 * **Tüm uygulamaları yedekle**, telefonun vazgeçemeyeceği uygulamalar hariç hepsini yedekler (Sistem UI, Ayarlar, Shell, EasyAndroid'in kendisi ve UAD-NG listesinde güvensiz işaretli paketler). Diyalogda uygulama verisi, OBB dosyaları, `Android/data` ve sıkıştırmayı seçersiniz. Diyalog kaç sistem uygulamasının dahil olduğunu söyler. Veri ancak uygulama kapalıyken tutarlıdır, bu yüzden seçili uygulamalar yedeklenirken kapatılır.
-* **Seçerek yedekle** uygulamaları tek tek seçtirir.
 * **Bekleyen**, **güncellenen** ve **yenile** kartları uygulamaları sizin yerinize seçer: yedeği olmayanlar, kurulu sürümü yedeğinden yeni olanlar ve zaten yedeği olanlar.
 * Her dosya SHA-256 özetiyle saklanır ve manifest en son yazılır, bu yüzden yarım kalan bir yedek "eksik yedek" olarak işaretlenir.
 
 ## Uygulamaları geri yükle
 
-**Yedekler** sekmesini açın (veya Ana Sayfa'daki **Geri yükle** kartlarında **Cihazdan**'a dokunun).
+**Geri Yükle** sekmesini açın (veya Ana Sayfa'daki **Geri yükle** kartlarında **Cihazdan**'a dokunun).
 
-* Ana Sayfa'daki **Tüm uygulamaları geri yükle**, **Eksik uygulamaları geri yükle** ve **Yeni sürümleri geri yükle** kartları Yedekler'i ilgili yedekler işaretli açar. Devam etmek için **Geri yükle**'ye basın.
+* Ana Sayfa'daki **Tüm uygulamaları geri yükle**, **Eksik uygulamaları geri yükle** ve **Yeni sürümleri geri yükle** kartları Geri Yükle'yi ilgili yedekler işaretli açar. Devam etmek için **Geri yükle**'ye basın.
 * Neyin geri yükleneceğini seçersiniz: uygulama, verisi, OBB dosyaları ve izinler. Uygulama zaten kuruluysa üzerine yazabilir veya atlayabilirsiniz; bir uygulama için ya da hepsi için.
 * Telefonda bir şey değişmeden önce tüm özetler doğrulanır.
 * Önce uygulamalarınızı, sonra sistem yedeğini geri yükleyin; çünkü varsayılan uygulamalar için paketlerin kurulu olması gerekir.
@@ -54,8 +54,17 @@ EasyAndroid, root'lu bir Android telefonda PC olmadan uygulamaları yedekler, ge
 Ana Sayfa'da **Sistemi yedekle**'yi açın.
 
 * Ayarları, varsayılan uygulamaları ve Wi-Fi ağlarını tek tek ya da grup halinde seçin. Wi-Fi şifreleri yedek klasöründe şifrelenmeden saklandığı için Wi-Fi ağları varsayılan olarak seçili gelmez.
-* Kayıtlı sistem yedekleri **Yedekler** sekmesinde listelenir. **Geri yükle** yalnızca telefondan farklı olanları gösterir. Her ROM'da aynı anlama gelen ayarlar işaretli gelir, diğerleri eski ROM'a özel olabilir ve seçimi size kalır.
+* Kayıtlı sistem yedekleri **Geri Yükle** sekmesinde listelenir. **Geri yükle** yalnızca telefondan farklı olanları gösterir. Her ROM'da aynı anlama gelen ayarlar işaretli gelir, diğerleri eski ROM'a özel olabilir ve seçimi size kalır.
 * Kimlik, güvenlik ve durum ayarları (cihaz kimlikleri, kilit ekranı, SIM ayarları gibi) hiç saklanmaz ve geri yüklenmez.
+
+## Medya, klasörler, mesajlar, arama kayıtları ve duvar kâğıtları
+
+Bunlar dosya kopyası olarak, her seferinde ayrı bir yedek halinde saklanır ve **Geri Yükle** sekmesinde kendi çiplerinin altında listelenir.
+
+* **Medya:** Uygulama yedeğinin seçeneklerinde **Medya**'ya dokunun ve paylaşımlı depolamadan klasörleri seçin. Uygulamalardan sonra yedeklenirler.
+* **Klasörler:** **Geri Yükle** içinde **Klasörler**'i açın ve **Klasör seç ve yedekle**'ye dokunun. Android klasörü ve yedek klasörü hiçbir zaman dahil edilmez.
+* **Mesajlar**, **Arama Kayıtları** ve **Duvar Kâğıtları:** **Geri Yükle** içinde çiplerini açın ve **Şimdi yedekle**'ye dokunun. Veritabanı veya duvar kâğıdı dosyaları olduğu gibi kopyalanır, bu yüzden tek tek mesaj veya arama seçilemez.
+* **Geri yükle**, mevcut dosyaları yedektekilerle değiştirir. Mesajları ve arama kayıtlarını yalnızca aynı Android sürümünde ve ROM'da geri yükleyin; geri yüklenen duvar kâğıdının görünmesi için telefonu yeniden başlatmanız gerekebilir.
 
 ## Debloat
 
@@ -73,7 +82,7 @@ Ana Sayfa'da **Sistemi yedekle**'yi açın.
 ## Yedekleri PC'ye taşıma
 
 * Telefonu biçimlendirmeden önce dahili depolamadaki `EasyAndroid/Backups` klasörünü PC'ye kopyalayın, yeni ROM kurulduktan sonra geri kopyalayın. EasyADB klasörü doğrudan açabilir.
-* Tek bir yedek **Yedekler**'den tek dosyalık `.easybckp` olarak dışa aktarılabilir ve **.easybckp içe aktar** ile geri alınabilir.
+* Tek bir yedek **Geri Yükle**'den tek dosyalık `.easybckp` olarak dışa aktarılabilir ve **.easybckp içe aktar** ile geri alınabilir.
 * Sıkıştırılmamış yedekler iki yönde de EasyADB biçimini kullanır. zstd ile sıkıştırılmış yedekler daha küçüktür ama EasyADB bunları henüz okuyamaz.
 
 ## Ayarlar
@@ -90,6 +99,5 @@ Ana Sayfa'da **Sistemi yedekle**'yi açın.
 * Verisini Android Keystore ile telefona bağlayan uygulamalar (bankacılık, doğrulayıcılar) geri yüklemeden sonra yeniden giriş isteyebilir.
 * Wi-Fi ağlarını geri yüklemek için Android 11 veya üstü gerekir. Kurumsal ve WEP ağlar saklanmaz.
 * Özel yedek klasörü dahili depolamada veya SD kartta olmalıdır. Bulut klasörlerinin root komutlarının kullanabileceği bir yolu yoktur.
-* Mesajlar, arama kayıtları, klasörler ve duvar kâğıtları planlanıyor, henüz yok.
 
 <p align="right">(<a href="#readme-top">başa dön</a>)</p>

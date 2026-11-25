@@ -103,10 +103,6 @@ fun MainScreen(model: MainViewModel) {
                     preselect = found.map { it.packageName }.toSet()
                     showApps = true
                 }
-            QuickAction.BACKUP_SELECT -> {
-                preselect = emptySet()
-                showApps = true
-            }
             QuickAction.RESTORE_ALL, QuickAction.RESTORE_MISSING, QuickAction.RESTORE_NEWER -> check(targets.restore(action)) { found ->
                 request = BackupsRequest.Select(found.map { it.id }.toSet())
                 showMore = false
@@ -117,8 +113,13 @@ fun MainScreen(model: MainViewModel) {
                 showMore = false
                 tab = Tab.DEBLOAT
             }
-            QuickAction.SYNC -> showSoon(context)
         }
+    }
+
+    fun openSegment(segment: BackupsSegment) {
+        request = BackupsRequest.Open(segment)
+        showSearch = false
+        tab = Tab.BACKUPS
     }
 
     // Back from another tab goes to the first one; only back from the first tab leaves the app.
@@ -169,6 +170,7 @@ fun MainScreen(model: MainViewModel) {
                             showSearch = false
                             perform(it)
                         },
+                        onSegment = ::openSegment,
                     )
                 }
                 showMore -> Overlay(stringResource(R.string.more_actions), { showMore = false }) {
@@ -177,7 +179,7 @@ fun MainScreen(model: MainViewModel) {
                 tab == Tab.SETTINGS -> {
                     val page = settingsPage
                     if (page == null) {
-                        SettingsScreen(model, onPage = { settingsPage = it }, onSystemBackup = { showSystem = true })
+                        SettingsScreen(model, onPage = { settingsPage = it }, onSystemBackup = { showSystem = true }, onSegment = ::openSegment)
                     } else {
                         Overlay(stringResource(page.title), { settingsPage = null }) { SettingsPageContent(page, model) }
                     }
@@ -199,6 +201,7 @@ fun MainScreen(model: MainViewModel) {
                         tab = Tab.SETTINGS
                     },
                     onSearch = { showSearch = true },
+                    onSegment = ::openSegment,
                 )
                 root == RootState.CHECKING -> Loading()
                 root == RootState.MISSING -> NoRoot(model::checkRoot)

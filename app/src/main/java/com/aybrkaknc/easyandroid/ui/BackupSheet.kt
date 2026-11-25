@@ -27,8 +27,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -40,18 +38,16 @@ private class ChipSpec(
     @param:StringRes val text: Int,
     val selected: Boolean,
     val enabled: Boolean = true,
-    val soon: Boolean = false,
     val onClick: () -> Unit = {},
 )
 
 @Composable
 private fun SheetChip(spec: ChipSpec, modifier: Modifier) {
-    val context = LocalContext.current
     FilterChip(
         spec.selected,
-        { if (spec.soon) showSoon(context) else spec.onClick() },
+        spec.onClick,
         { Text(stringResource(spec.text), Modifier.fillMaxWidth(), textAlign = TextAlign.Center) },
-        modifier.heightIn(min = 52.dp).alpha(if (spec.soon) 0.4f else 1f),
+        modifier.heightIn(min = 52.dp),
         enabled = spec.enabled,
         leadingIcon = if (spec.selected) ({ Icon(Icons.Default.Check, null) }) else null,
         shape = RoundedCornerShape(26.dp),
@@ -71,11 +67,13 @@ private fun ChipRows(vararg chips: ChipSpec) {
     }
 }
 
-/** What goes into a backup and where it goes. Media and Cloud are not there yet. */
+/** What goes into a backup. Media chooses folders of shared storage that are saved after the apps. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BackupSheet(count: Int, onDismiss: () -> Unit, note: String? = null, onConfirm: (BackupOptions) -> Unit) {
+fun BackupSheet(count: Int, onDismiss: () -> Unit, note: String? = null, onConfirm: (BackupOptions, List<String>) -> Unit) {
     var options by remember { mutableStateOf(Env.prefs.state.value.backup) }
+    var media by remember { mutableStateOf(emptyList<String>()) }
+    var pickingMedia by remember { mutableStateOf(false) }
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.verticalScroll(rememberScrollState()).padding(start = 16.dp, end = 16.dp, bottom = 24.dp)) {
             Text(stringResource(R.string.back_up_count, count), style = MaterialTheme.typography.titleLarge)
@@ -85,23 +83,25 @@ fun BackupSheet(count: Int, onDismiss: () -> Unit, note: String? = null, onConfi
                 ChipSpec(R.string.part_data, options.data) { options = options.copy(data = !options.data) },
                 ChipSpec(R.string.part_external, options.externalData) { options = options.copy(externalData = !options.externalData) },
                 ChipSpec(R.string.part_expansion, options.obb) { options = options.copy(obb = !options.obb) },
-                ChipSpec(R.string.part_media, selected = false, soon = true),
+                ChipSpec(R.string.part_media, media.isNotEmpty()) { if (media.isEmpty()) pickingMedia = true else media = emptyList() },
             )
+            if (media.isNotEmpty()) Hint(stringResource(R.string.fileset_folders_count, media.size))
+            if (pickingMedia) {
+                FolderPickerDialog(media.toSet(), onDismiss = { pickingMedia = false }) {
+                    media = it
+                    pickingMedia = false
+                }
+            }
             Text(stringResource(R.string.compression), Modifier.padding(top = 20.dp, bottom = 12.dp), style = MaterialTheme.typography.titleMedium)
             ChipRows(
                 ChipSpec(R.string.compression_none, !options.compress) { options = options.copy(compress = false) },
                 ChipSpec(R.string.compression_zstd, options.compress) { options = options.copy(compress = true) },
             )
-            Text(stringResource(R.string.sheet_locations), Modifier.padding(top = 20.dp, bottom = 12.dp), style = MaterialTheme.typography.titleMedium)
-            ChipRows(
-                ChipSpec(R.string.location_device, selected = true),
-                ChipSpec(R.string.location_cloud, selected = false, soon = true),
-            )
             if (options.data || options.externalData) {
                 Text(stringResource(R.string.force_stop_warning), Modifier.padding(top = 16.dp), color = MaterialTheme.colorScheme.error)
                 if (note != null) Text(note, color = MaterialTheme.colorScheme.error)
             }
-            Button({ onConfirm(options) }, Modifier.fillMaxWidth().padding(top = 20.dp).heightIn(min = 56.dp)) {
+            Button({ onConfirm(options, media) },Modifier.fillMaxWidth().padding(top = 20.dp).heightIn(min = 56.dp)) {
                 Text(stringResource(R.string.sheet_backup), style = MaterialTheme.typography.titleMedium)
             }
         }

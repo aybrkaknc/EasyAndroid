@@ -41,6 +41,7 @@ import com.aybrkaknc.easyandroid.core.AppException
 import com.aybrkaknc.easyandroid.core.Archive
 import com.aybrkaknc.easyandroid.core.ErrorCode
 import com.aybrkaknc.easyandroid.core.FileKind
+import com.aybrkaknc.easyandroid.core.FileSetKind
 import com.aybrkaknc.easyandroid.core.RestoreOptions
 import com.aybrkaknc.easyandroid.core.StoredBackup
 import com.aybrkaknc.easyandroid.core.SuRoot
@@ -72,7 +73,10 @@ private fun StoredBackup.contents(): String {
 sealed interface BackupsRequest {
     data class Select(val ids: Set<String>) : BackupsRequest
     data object System : BackupsRequest
+    data class Open(val segment: BackupsSegment) : BackupsRequest
 }
+
+enum class BackupsSegment { APPS, MESSAGES, CALLS, FOLDERS, WALLPAPERS }
 
 @Composable
 private fun BackupsSegment.title(): String = stringResource(
@@ -81,15 +85,25 @@ private fun BackupsSegment.title(): String = stringResource(
         BackupsSegment.MESSAGES -> R.string.chip_messages
         BackupsSegment.CALLS -> R.string.chip_calls
         BackupsSegment.FOLDERS -> R.string.chip_folders
+        BackupsSegment.WALLPAPERS -> R.string.chip_wallpapers
     },
 )
 
-/** The saved backups, by kind. Only apps and system settings have any yet. */
+/** The saved backups, by kind. */
 @Composable
 fun BackupsScreen(model: MainViewModel, request: BackupsRequest?, onRequestHandled: () -> Unit) {
     var segment by rememberSaveable { mutableStateOf(BackupsSegment.APPS) }
-    // A request from Home is about app or system backups, which are in the first segment.
-    LaunchedEffect(request) { if (request != null) segment = BackupsSegment.APPS }
+    LaunchedEffect(request) {
+        when (request) {
+            null -> {}
+            // Opening a segment is all there is to do. The other requests are about apps or system settings.
+            is BackupsRequest.Open -> {
+                segment = request.segment
+                onRequestHandled()
+            }
+            else -> segment = BackupsSegment.APPS
+        }
+    }
     Column(Modifier.fillMaxSize()) {
         Row(
             Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 4.dp),
@@ -100,9 +114,10 @@ fun BackupsScreen(model: MainViewModel, request: BackupsRequest?, onRequestHandl
         Box(Modifier.weight(1f)) {
             when (segment) {
                 BackupsSegment.APPS -> AppBackups(model, request, onRequestHandled)
-                BackupsSegment.MESSAGES -> ListPlaceholderScreen(calls = false)
-                BackupsSegment.CALLS -> ListPlaceholderScreen(calls = true)
-                BackupsSegment.FOLDERS -> FolderBackupsScreen()
+                BackupsSegment.MESSAGES -> FileSetBackups(model, listOf(FileSetKind.MESSAGES))
+                BackupsSegment.CALLS -> FileSetBackups(model, listOf(FileSetKind.CALLS))
+                BackupsSegment.FOLDERS -> FileSetBackups(model, listOf(FileSetKind.FOLDERS, FileSetKind.MEDIA))
+                BackupsSegment.WALLPAPERS -> FileSetBackups(model, listOf(FileSetKind.WALLPAPER))
             }
         }
     }
@@ -133,7 +148,7 @@ private fun AppBackups(model: MainViewModel, request: BackupsRequest?, onRequest
     LaunchedEffect(request, stored) {
         val ready = stored ?: return@LaunchedEffect
         when (request) {
-            null -> return@LaunchedEffect
+            null, is BackupsRequest.Open -> return@LaunchedEffect
             is BackupsRequest.Select -> {
                 query = ""
                 selected = request.ids

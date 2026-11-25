@@ -7,7 +7,7 @@ import java.io.OutputStream
 import java.security.MessageDigest
 import kotlin.concurrent.thread
 
-enum class Stage { PREPARE, APK, OBB, DATA, VERIFY, INSTALL, PERMISSIONS, DEBLOAT, SETTINGS }
+enum class Stage { PREPARE, APK, OBB, DATA, FILES, VERIFY, INSTALL, PERMISSIONS, DEBLOAT, SETTINGS }
 
 /** Progress and cancellation of one job. */
 class Task(
@@ -140,8 +140,12 @@ private val LISTING = Regex("\\S+\\s+\\S+\\s+\\d+\\s+\\d{4}-\\d{2}-\\d{2} \\d{2}
  * Backups may come from anywhere and are extracted as root, so every entry has to stay
  * inside the package folder. Takes the output of `tar -tv`.
  */
-fun checkArchive(listing: String, packageName: String) {
+fun checkArchive(listing: String, packageName: String) = checkArchive(listing, setOf(packageName))
+
+/** The same check for an archive of several top-level [roots]. */
+fun checkArchive(listing: String, roots: Set<String>) {
     fun reject(line: String): Nothing = throw AppException(ErrorCode.BACKUP_INVALID, line)
+    fun inside(path: String) = roots.any { path == it || path.startsWith("$it/") }
     val lines = listing.lines().filter { it.isNotBlank() }
     if (lines.isEmpty()) reject("empty archive")
     val names = ArrayList<String>()
@@ -152,13 +156,13 @@ fun checkArchive(listing: String, packageName: String) {
             'l' -> rest.substringBefore(" -> ").also { links += it }
             'h' -> {
                 val target = rest.substringAfter(" link to ", "").ifEmpty { rest.substringAfter(" -> ", "") }
-                if (!target.startsWith("$packageName/") || ".." in target.split('/')) reject(line)
+                if (roots.none { target.startsWith("$it/") } || ".." in target.split('/')) reject(line)
                 rest.substringBefore(" link to ").substringBefore(" -> ")
             }
             '-', 'd', 'p', 's' -> rest
             else -> reject(line)
         }
-        if (name != packageName && !name.startsWith("$packageName/")) reject(line)
+        if (!inside(name)) reject(line)
         if (".." in name.split('/')) reject(line)
         names += name
     }
@@ -170,5 +174,5 @@ fun checkArchive(listing: String, packageName: String) {
             parent = parent.substringBeforeLast('/', "")
         }
     }
-    if (packageName in links) reject(packageName)
+    roots.firstOrNull { it in links }?.let { reject(it) }
 }

@@ -3,7 +3,7 @@
     <string name="app_name" translatable="false">EasyAndroid</string>
 
     <string name="tab_home">Home</string>
-    <string name="tab_backups">Backups</string>
+    <string name="tab_backups">Restore</string>
     <string name="tab_debloat">Debloat</string>
     <string name="tab_system">System</string>
     <string name="tab_settings">Settings</string>
@@ -40,7 +40,6 @@
     <string name="to_device">To device</string>
     <string name="from_device">From device</string>
     <string name="with_easyadb">With EasyADB</string>
-    <string name="coming_soon">Coming soon</string>
     <string name="nothing_to_do">Nothing matches this action.</string>
     <string name="pin">Pin to Home</string>
     <string name="unpin">Unpin from Home</string>
@@ -50,16 +49,12 @@
 
     <string name="action_backup_all">Back up all apps</string>
     <string name="action_backup_all_text">Back up installed apps from this device</string>
-    <string name="action_backup_select">Back up selected apps</string>
-    <string name="action_backup_select_text">Choose which apps to back up</string>
     <string name="action_backup_pending">Back up pending apps</string>
     <string name="action_backup_pending_text">Back up apps that are not backed up yet</string>
     <string name="action_backup_updated">Back up updated apps</string>
     <string name="action_backup_updated_text">Back up apps that have a newer version installed on this device</string>
     <string name="action_backup_redo">Redo existing backups</string>
     <string name="action_backup_redo_text">Back up all currently backed up apps again</string>
-    <string name="action_sync">Sync latest device backups to cloud</string>
-    <string name="action_sync_text">Sync all latest backups of apps from the device to cloud</string>
     <string name="action_restore_all">Restore all apps</string>
     <string name="action_restore_all_text">Restore all backed up apps</string>
     <string name="action_restore_missing">Restore missing apps</string>
@@ -83,7 +78,7 @@
     <string name="action_calls_restore">Restore call logs</string>
     <string name="action_calls_restore_text">Restore call logs from the most recent backup</string>
     <string name="action_folders_backup">Back up folders</string>
-    <string name="action_folders_backup_text">Create backups for folder setups on this device</string>
+    <string name="action_folders_backup_text">Back up the folders of shared storage that you choose</string>
     <string name="action_folders_restore">Restore folders</string>
     <string name="action_folders_restore_text">Restore folders from the most recent backups</string>
 
@@ -118,8 +113,6 @@
     <string name="advanced_restart_text">Reload EasyAndroid</string>
     <string name="notif_app">App notifications</string>
     <string name="notif_app_text">Notification channels</string>
-    <string name="notif_sound">Play notification sounds</string>
-    <string name="notif_sound_text">Task success and failure</string>
     <string name="help_center">Help center</string>
     <string name="help_center_text">How to use EasyAndroid</string>
     <string name="help_contact">Contact</string>
@@ -144,9 +137,6 @@
     <string name="part_apk">APKs</string>
     <string name="part_expansion">Expansion (OBB)</string>
     <string name="part_media">Media</string>
-    <string name="sheet_locations">Select backup locations</string>
-    <string name="location_device">Device</string>
-    <string name="location_cloud">Cloud</string>
     <string name="sheet_backup">BACKUP</string>
     <string name="sheet_apply">APPLY OPTIONS</string>
     <string name="sheet_reset">RESET FILTERS</string>
@@ -157,27 +147,13 @@
     <string name="sort_update">Update date</string>
     <string name="sort_backup_date">Backup date</string>
     <string name="sort_backup_size">Backup size</string>
-    <string name="filter_favorites">Favorites</string>
-    <string name="filter_fav">Favorites</string>
-    <string name="filter_not_fav">Not favorites</string>
-    <string name="filter_labels">App labels</string>
-    <string name="filter_labelled">Labelled</string>
-    <string name="filter_not_labelled">Not labelled</string>
     <string name="filter_enabled">Enabled status</string>
     <string name="filter_enabled_on">Enabled</string>
     <string name="filter_enabled_off">Disabled</string>
     <string name="search_shortcuts">SHORTCUTS</string>
     <string name="search_quick">QUICK ACTIONS</string>
     <string name="search_apps">APPS</string>
-    <string name="placeholder_selected">0 / 0 selected</string>
-    <string name="placeholder_text">Coming soon. Backing this up will be added later.</string>
     <string name="backup_options">Backup options</string>
-    <string name="folders_local">Local folder setups</string>
-    <string name="folders_cloud">Cloud backups</string>
-    <string name="folders_empty">No folder setup found on device. Click below to create one.</string>
-    <string name="folders_cloud_empty">No cloud backups.</string>
-    <string name="folders_new">New folder setup</string>
-    <string name="folders_from_cloud">Copy folder setups from cloud</string>
     <string name="settings_theme">Theme</string>
     <string name="more_options">More options</string>
     <string name="theme_system">System</string>
@@ -315,6 +291,21 @@
     <string name="stage_apk">App</string>
     <string name="stage_obb">OBB</string>
     <string name="stage_data">Data</string>
+    <string name="stage_files">Files</string>
+    <string name="kind_media">Media</string>
+    <string name="fileset_empty">No backups of this kind yet.</string>
+    <string name="fileset_backup">Back up now</string>
+    <string name="fileset_pick">Choose folders and back up</string>
+    <string name="folder_picker_title">Choose folders</string>
+    <string name="folder_picker_confirm">Select</string>
+    <string name="folder_picker_empty">No folders found in shared storage.</string>
+    <string name="folder_picker_hint">Apps and the backup folder are left out.</string>
+    <string name="fileset_restore_title">Restore %1$s?</string>
+    <string name="fileset_restore_replace">The current %1$s on the phone are replaced by this backup.</string>
+    <string name="fileset_restore_files">Files with the same names on the phone are replaced.</string>
+    <string name="fileset_hint_wallpaper">A restart may be needed before the wallpaper shows.</string>
+    <string name="fileset_hint_database">Works best on the same Android version and ROM.</string>
+    <string name="fileset_folders_count">%1$d folders</string>
     <string name="stage_verify">Verifying</string>
     <string name="stage_install">Installing</string>
     <string name="stage_permissions">Permissions</string>

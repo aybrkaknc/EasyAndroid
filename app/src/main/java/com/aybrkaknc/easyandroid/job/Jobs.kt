@@ -73,15 +73,24 @@ object Jobs {
                 for ((index, item) in items.withIndex()) {
                     if (cancelled) break
                     val label = name(item)
+                    var stop = false
                     flow.update { it?.copy(index = index, item = label, stage = Stage.PREPARE, done = 0, size = 0) }
                     val result = try {
                         val lines = work(item, task())
                         JobResult(label, if (lines.any { it.id in WARNINGS }) ResultKind.WARNING else ResultKind.OK, lines)
                     } catch (e: Exception) {
                         if (e is AppException && e.code == ErrorCode.CANCELLED) break
+                        stop = e is AppException && e.code in STOPS
                         JobResult(label, ResultKind.FAILED, listOf(errorText(e)))
                     }
                     flow.update { it?.copy(results = it.results + result) }
+                    if (stop) {
+                        val rest = items.drop(index + 1).map {
+                            JobResult(name(it), ResultKind.FAILED, listOf(UiText(R.string.not_tried)))
+                        }
+                        flow.update { it?.copy(results = it.results + rest) }
+                        break
+                    }
                 }
             } finally {
                 if (lock.isHeld) lock.release()
@@ -111,6 +120,11 @@ object Jobs {
     fun dismiss() {
         if (flow.value?.finished == true) flow.value = null
     }
+
+    /** After these nothing that follows can work either: the PC said no, did not answer or is gone. */
+    private val STOPS = setOf(
+        ErrorCode.PC_MISSING, ErrorCode.PC_LOST, ErrorCode.PC_REJECTED, ErrorCode.PC_EXPIRED, ErrorCode.PC_BUSY,
+    )
 
     private val WARNINGS = Note.entries.map { noteId(it) }.toSet()
 }
@@ -143,6 +157,8 @@ fun errorText(error: Throwable): UiText {
         ErrorCode.PC_LOST -> R.string.err_pc_lost
         ErrorCode.PC_REJECTED -> R.string.err_pc_rejected
         ErrorCode.PC_FAILED -> R.string.err_pc_failed
+        ErrorCode.PC_EXPIRED -> R.string.err_pc_expired
+        ErrorCode.PC_BUSY -> R.string.err_pc_busy
         ErrorCode.COMMAND_FAILED, null -> R.string.err_command_failed
     }
     return UiText(id, listOf(detail))
@@ -160,6 +176,8 @@ fun stageId(stage: Stage): Int = when (stage) {
     Stage.DEBLOAT -> R.string.stage_debloat
     Stage.SETTINGS -> R.string.stage_settings
     Stage.TRANSFER -> R.string.stage_transfer
+    Stage.WAITING -> R.string.stage_waiting
+    Stage.QUEUED -> R.string.stage_queued
 }
 
 /** What the PC reports back about a backup it took, as lines of the job report. */

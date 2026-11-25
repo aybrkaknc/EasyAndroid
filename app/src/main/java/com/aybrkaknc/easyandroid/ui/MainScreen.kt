@@ -52,6 +52,7 @@ import com.aybrkaknc.easyandroid.R
 import com.aybrkaknc.easyandroid.RootState
 import com.aybrkaknc.easyandroid.job.JobState
 import com.aybrkaknc.easyandroid.job.Jobs
+import com.aybrkaknc.easyandroid.job.PcApproval
 import com.aybrkaknc.easyandroid.job.ResultKind
 import com.aybrkaknc.easyandroid.job.stageId
 
@@ -73,6 +74,7 @@ fun MainScreen(model: MainViewModel) {
     val job by Jobs.state.collectAsStateWithLifecycle()
     val error by model.error.collectAsStateWithLifecycle()
     val offer by model.deleteOffer.collectAsStateWithLifecycle()
+    val question by PcApproval.question.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableStateOf(Tab.HOME) }
     var showApps by rememberSaveable { mutableStateOf(false) }
     var showSystem by rememberSaveable { mutableStateOf(false) }
@@ -238,6 +240,8 @@ fun MainScreen(model: MainViewModel) {
             ids.forEach { Hint(it) }
         }
     }
+
+    question?.let { PcQuestionDialog(it) }
 
     error?.let { text ->
         ConfirmDialog(

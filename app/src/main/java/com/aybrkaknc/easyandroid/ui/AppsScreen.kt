@@ -170,11 +170,13 @@ fun AppsScreen(model: MainViewModel, preselected: Set<String> = emptySet()) {
 fun startBackup(model: MainViewModel, apps: List<AppInfo>, options: BackupOptions, target: Target = Target.PHONE) {
     val engine = Env.backups()
     val device by lazy { engine.snapshot() }
+    val batch = PcLink.newId()
     Jobs.start(Env.app, R.string.job_backup, apps, { it.label }, after = { model.refreshBackups() }) { app, task ->
         if (target == Target.PC) {
             val request = PcRequest(
                 id = PcLink.newId(), created = 0, type = "app", packageName = app.packageName,
                 data = options.data, obb = options.obb, externalData = options.externalData,
+                batch = batch, index = apps.indexOf(app), size = apps.size,
             )
             Env.pc().send(request, task).notes.map(::pcNoteText)
         } else {

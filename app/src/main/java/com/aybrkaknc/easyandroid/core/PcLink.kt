@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.ListSerializer
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
 
 /** What the phone asks the PC to do. See "Posta kutusu" in EasyADB's `EASYANDROID_INTEROP.md`. */
 @Serializable
@@ -20,6 +21,11 @@ data class PcRequest(
     val names: List<String> = emptyList(),
     val ids: List<String> = emptyList(),
     val system: List<String> = emptyList(),
+    val megabytes: Int = 0,
+    /** The requests of one tap share this, so that the PC asks once. Empty means a group of its own. */
+    val batch: String = "",
+    val index: Int = 0,
+    val size: Int = 1,
     val format: String = PcLink.REQUEST_FORMAT,
     val version: Int = 1,
 )
@@ -56,6 +62,9 @@ data class PcJob(
     /** `messages`, `calls`, `wallpaper` for `files`. */
     val kinds: List<String> = emptyList(),
     val folders: List<String> = emptyList(),
+    /** The PC that asks, and what it calls itself. */
+    val pc: String = "",
+    val pcName: String = "",
     val format: String = PcLink.JOB_FORMAT,
     val version: Int = 1,
 )
@@ -104,35 +113,51 @@ class PcLink(
      * looking at the phone ends the wait.
      */
     fun send(request: PcRequest, task: Task): PcStatus {
+        // There is one place for a request, so a second one would overwrite the first.
+        if (!sending.compareAndSet(false, true)) throw AppException(ErrorCode.PC_BUSY)
+        try {
+            return exchange(request, task)
+        } finally {
+            sending.set(false)
+        }
+    }
+
+    private fun exchange(request: PcRequest, task: Task): PcStatus {
         if (!connected()) throw AppException(ErrorCode.PC_MISSING)
-        shell.run("rm -f ${q("$BOX/status.json")} ${q("$BOX/cancel")}")
+        // The cancel file stays: the PC may not have read the last one yet, and it names its request.
+        shell.run("rm -f ${q("$BOX/status.json")}")
         write("request.json", JSON.encodeToString(PcRequest.serializer(), request.copy(created = clock(), phone = serial())))
         task.progress(Stage.TRANSFER)
-        var cancelledAt = -1L
         try {
             while (true) {
-                if (cancelledAt < 0 && task.cancelled()) {
+                if (task.cancelled()) {
+                    // Leaves the cancel file for the PC, which reads it on its next visit.
                     write("cancel", request.id)
-                    cancelledAt = clock()
+                    throw AppException(ErrorCode.CANCELLED)
                 }
                 val status = status(request.id)
                 if (status != null) {
-                    if (status.state == "running") task.progress(stageOf(status.stage), status.done, status.total)
+                    if (status.state == "running") {
+                        task.step(status.item)
+                        task.progress(stageOf(status.stage), status.done, status.total)
+                    }
+                    if (status.state == "waiting") task.progress(if (status.stage == "busy") Stage.QUEUED else Stage.WAITING)
                     if (status.finished) return settle(status)
                 }
-                if (cancelledAt >= 0 && clock() - cancelledAt > CANCEL_WAIT) throw AppException(ErrorCode.CANCELLED)
                 if ((silence() ?: Long.MAX_VALUE) > LOST) throw AppException(ErrorCode.PC_LOST)
                 pause(POLL)
             }
         } finally {
-            shell.run("rm -f ${q("$BOX/request.json")} ${q("$BOX/status.json")} ${q("$BOX/cancel")}")
+            shell.run("rm -f ${q("$BOX/request.json")} ${q("$BOX/status.json")}")
         }
     }
 
     private fun settle(status: PcStatus): PcStatus = when (status.state) {
         "done" -> status
         "cancelled" -> throw AppException(ErrorCode.CANCELLED)
-        "rejected" -> throw AppException(ErrorCode.PC_REJECTED, status.error.orEmpty())
+        "rejected" -> throw AppException(
+            if (status.error == "expired") ErrorCode.PC_EXPIRED else ErrorCode.PC_REJECTED, status.error.orEmpty(),
+        )
         else -> throw AppException(ErrorCode.PC_FAILED, status.error.orEmpty())
     }
 
@@ -144,7 +169,8 @@ class PcLink(
         } catch (e: SerializationException) {
             return null
         }
-        return status.takeIf { it.id == id }
+        // A request that the PC could not read has no id in its answer.
+        return status.takeIf { it.id == id || (it.id.isEmpty() && it.state == "rejected") }
     }
 
     /** The app backups that the PC holds, newest list the PC wrote. */
@@ -192,8 +218,8 @@ class PcLink(
         private const val FRESH = 10L
         private const val LOST = 20L
         private const val MAX_AGE = 600L
-        private const val CANCEL_WAIT = 15L
         private const val POLL = 500L
+        private val sending = AtomicBoolean(false)
 
         fun newId(): String = UUID.randomUUID().toString()
 

@@ -143,11 +143,21 @@ fun SettingsScreen(model: MainViewModel, onPage: (SettingsPage) -> Unit) {
         }
 
         SettingsHeader(stringResource(R.string.settings_group_advanced))
-        CardGroup(2) { index, shape ->
+        CardGroup(4) { index, shape ->
             if (index == 0) {
                 SettingCard(
                     stringResource(R.string.advanced_reports), shape, summary = stringResource(R.string.advanced_reports_text),
                     icon = painterResource(R.drawable.ic_bug), tint = Category.CALLS, onClick = { onPage(SettingsPage.REPORTS) },
+                )
+            } else if (index == 1) {
+                SettingCard(
+                    stringResource(R.string.settings_speed), shape, summary = stringResource(R.string.settings_speed_text),
+                    icon = rememberVectorPainter(Icons.AutoMirrored.Filled.Send), tint = Teal, onClick = { onPage(SettingsPage.SPEED) },
+                )
+            } else if (index == 2) {
+                SettingCard(
+                    stringResource(R.string.settings_pcs), shape, summary = stringResource(R.string.settings_pcs_text),
+                    icon = rememberVectorPainter(Icons.Default.Check), tint = Green, onClick = { onPage(SettingsPage.PCS) },
                 )
             } else {
                 SettingCard(

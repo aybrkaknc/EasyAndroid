@@ -88,19 +88,19 @@ These are saved as copies of files, one backup for each time, and listed under t
 
 This needs EasyADB open on a PC that is connected to the phone with adb (USB or Wireless debugging) and root for the phone's shell: allow it in your root manager when EasyADB asks.
 
-* In a backup sheet or dialog choose **PC (EasyADB)** instead of **This phone**. It stays dimmed until a PC is connected. The first time, EasyADB asks on the PC; choose **Trust this phone** to stop being asked. The choice is **This phone** every time you open a sheet.
+* In a backup sheet or dialog choose **PC (EasyADB)** instead of **This phone**. It stays dimmed until a PC is connected. The first time, EasyADB asks on the PC; choose **Trust this phone** to stop being asked. One answer covers all apps of one backup, and a request that nobody answers within 2 minutes ends. While it waits the phone shows **Waiting for approval on the PC**, or that the PC is busy. After a refusal the rest is not tried. The choice is **This phone** every time you open a sheet.
 * Apps are sent to the PC as they are read and take no space on the phone. zstd compression is not available for the PC.
 * Folders go **Straight to the PC** or are made on the phone first, which needs as much free space as the folders. Messages, call logs, wallpapers and system settings are always made on the phone first and copied afterwards.
 * When the PC has checked its copy, the app asks whether to delete the copy on the phone. Nothing is deleted without your answer.
 * Apps that the PC holds count as saved for **Back up pending apps** and **Back up updated apps**.
-* From the PC, the **Phone data** tab of EasyADB asks this phone for messages, call logs, wallpapers and system settings and copies them over. EasyAndroid may open on the phone while it works.
+* From the PC, the **Phone data** tab of EasyADB asks this phone for messages, call logs, wallpapers and system settings and copies them over. The phone asks first, with a notification and in the app: **Reject**, **This time only** or **Trust this PC**. Without an answer within 2 minutes nothing starts. Trusted PCs are listed in Settings under **Trusted PCs**. This question only covers what EasyAndroid does; a PC that has root through adb can also read the phone by itself. If notifications are off, EasyADB opens EasyAndroid on the phone.
 * Giving root to the shell lets every PC that is paired with the phone run root commands on it. Pair only PCs you own.
 
 ## Settings
 
 * **Appearance and language:** theme (System, Light, Dark, Pure black) and the app language (English or Turkish, Android 13 or newer).
 * **Storage and security:** backup folder (internal storage or SD card), how much space the backups use, and **Delete all backups**, which asks first and cannot be undone.
-* **Advanced tools:** **Recent job reports** lists the results of your last 50 jobs, and **Restart app** reloads EasyAndroid.
+* **Advanced tools:** **Wi-Fi transfer speed test** sends 32 MB each way between the phone and the PC that runs EasyADB and shows how fast a backup can travel; EasyADB always asks on the PC first. **Trusted PCs** lists the PCs whose jobs start without asking. **Recent job reports** lists the results of your last 50 jobs, and **Restart app** reloads EasyAndroid.
 * **Notifications:** opens the notification settings of Android for EasyAndroid.
 * **Help and info:** this page, contact, the repository and the about dialog.
 

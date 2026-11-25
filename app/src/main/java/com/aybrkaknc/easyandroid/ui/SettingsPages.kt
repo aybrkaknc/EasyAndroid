@@ -42,6 +42,8 @@ enum class SettingsPage(@param:StringRes val title: Int) {
     LANGUAGE(R.string.language),
     STORAGE(R.string.storage_space),
     REPORTS(R.string.advanced_reports),
+    SPEED(R.string.settings_speed),
+    PCS(R.string.settings_pcs),
 }
 
 @Composable
@@ -50,6 +52,8 @@ fun SettingsPageContent(page: SettingsPage, model: MainViewModel) {
         SettingsPage.LANGUAGE -> LanguagePage()
         SettingsPage.STORAGE -> StoragePage(model)
         SettingsPage.REPORTS -> ReportsScreen()
+        SettingsPage.SPEED -> SpeedPage()
+        SettingsPage.PCS -> TrustedPcsPage()
     }
 }
 

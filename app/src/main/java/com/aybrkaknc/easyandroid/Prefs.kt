@@ -9,7 +9,10 @@ import kotlinx.coroutines.flow.StateFlow
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK, BLACK }
 
-data class Settings(val backupRoot: String, val theme: ThemeMode, val backup: BackupOptions)
+/** A PC whose jobs start on this phone without asking. */
+data class TrustedPc(val id: String, val name: String)
+
+data class Settings(val backupRoot: String, val theme: ThemeMode, val backup: BackupOptions, val trustedPcs: List<TrustedPc>)
 
 class Prefs(context: Context) {
     private val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
@@ -25,7 +28,20 @@ class Prefs(context: Context) {
             externalData = prefs.getBoolean("backupExternal", false),
             compress = prefs.getBoolean("backupCompress", false),
         ),
+        trustedPcs = prefs.getStringSet("trustedPcs", null).orEmpty()
+            .map { TrustedPc(it.substringBefore(' '), it.substringAfter(' ')) }.sortedBy { it.name },
     )
+
+    fun trustedPcs(): List<TrustedPc> = flow.value.trustedPcs
+
+    fun trustPc(pc: TrustedPc) = setTrusted(trustedPcs().filter { it.id != pc.id } + pc)
+
+    fun forgetPc(id: String) = setTrusted(trustedPcs().filter { it.id != id })
+
+    private fun setTrusted(list: List<TrustedPc>) {
+        prefs.edit { putStringSet("trustedPcs", list.map { "${it.id} ${it.name}" }.toSet()) }
+        flow.value = load()
+    }
 
     fun setBackupRoot(path: String?) {
         prefs.edit { putString("backupRoot", path) }

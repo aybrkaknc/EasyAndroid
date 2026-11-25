@@ -88,19 +88,19 @@ Bunlar dosya kopyası olarak, her seferinde ayrı bir yedek halinde saklanır ve
 
 Bunun için telefona adb ile (USB veya Kablosuz hata ayıklama) bağlı bir PC'de EasyADB açık olmalı ve telefonun kabuğuna (shell) root verilmiş olmalı. EasyADB isteyince root yöneticinizde izin verin.
 
-* Bir yedekleme panelinde veya diyalogunda **Bu telefon** yerine **PC (EasyADB)** seçin. Bir PC bağlanana kadar soluk kalır. İlk seferde EasyADB PC'de sorar; sorulmaması için **Bu telefona güven**'i seçin. Bir paneli her açtığınızda seçim **Bu telefon** olarak gelir.
+* Bir yedekleme panelinde veya diyalogunda **Bu telefon** yerine **PC (EasyADB)** seçin. Bir PC bağlanana kadar soluk kalır. İlk seferde EasyADB PC'de sorar; sorulmaması için **Bu telefona güven**'i seçin. Tek yanıt bir yedeklemenin bütün uygulamalarını kapsar, 2 dakika yanıtlanmayan istek düşer. Beklerken telefonda **PC'de onay bekleniyor** ya da PC'nin meşgul olduğu yazar. Ret sonrasında kalanlar denenmez. Bir paneli her açtığınızda seçim **Bu telefon** olarak gelir.
 * Uygulamalar okundukça PC'ye gönderilir ve telefonda yer kaplamaz. PC için zstd sıkıştırması kullanılamaz.
 * Klasörler **Doğrudan PC'ye** gider ya da önce telefonda alınır; bunun için klasörler kadar boş yer gerekir. Mesajlar, arama kayıtları, duvar kâğıtları ve sistem ayarları her zaman önce telefonda alınır, sonra kopyalanır.
 * PC kendi kopyasını doğruladığında uygulama telefondaki kopyanın silinip silinmeyeceğini sorar. Cevabınız olmadan hiçbir şey silinmez.
 * PC'nin elindeki uygulamalar **Bekleyen uygulamaları yedekle** ve **Güncellenen uygulamaları yedekle** için yedeklenmiş sayılır.
-* PC'den, EasyADB'nin **Telefon verileri** sekmesi bu telefondan mesaj, arama kaydı, duvar kâğıdı ve sistem ayarı yedeklerini ister ve kopyalar. Telefon çalışırken EasyAndroid ekranda açılabilir.
+* PC'den, EasyADB'nin **Telefon verileri** sekmesi bu telefondan mesaj, arama kaydı, duvar kâğıdı ve sistem ayarı yedeklerini ister ve kopyalar. Telefon önce bildirimle ve uygulama içinde sorar: **Reddet**, **Yalnızca bu sefer** veya **Bu bilgisayara güven**. 2 dakika yanıt verilmezse hiçbir şey başlamaz. Güvenilen bilgisayarlar Ayarlar'da **Güvenilen bilgisayarlar** altındadır. Bu soru yalnızca EasyAndroid'in yaptıklarını kapsar; adb üzerinden root'u olan bir PC telefonu kendisi de okuyabilir. Bildirimler kapalıysa EasyADB telefonda EasyAndroid'i açar.
 * Kabuğa root vermek, telefonla eşleşmiş her PC'nin telefonda root komutu çalıştırabilmesi demektir. Yalnızca kendi PC'lerinizi eşleştirin.
 
 ## Ayarlar
 
 * **Görünüm ve dil:** tema (Sistem, Açık, Koyu, Saf siyah) ve uygulama dili (İngilizce veya Türkçe, Android 13 veya üstü).
 * **Depolama ve güvenlik:** yedek klasörü (dahili depolama veya SD kart), yedeklerin kapladığı alan ve önce soran, geri alınamayan **Tüm yedekleri sil**.
-* **Gelişmiş araçlar:** **Son işlem raporları** son 50 işin sonucunu listeler, **Uygulamayı yeniden başlat** EasyAndroid'i baştan yükler.
+* **Gelişmiş araçlar:** **Wi-Fi aktarım hız testi**, telefon ile EasyADB'nin çalıştığı PC arasında her yönde 32 MB gönderir ve bir yedeğin ne kadar hızlı gidebileceğini gösterir; EasyADB önce PC'de her zaman sorar. **Güvenilen bilgisayarlar**, işleri sormadan başlayan PC'leri listeler. **Son işlem raporları** son 50 işin sonucunu listeler, **Uygulamayı yeniden başlat** EasyAndroid'i baştan yükler.
 * **Bildirimler:** Android'in EasyAndroid bildirim ayarlarını açar.
 * **Yardım ve bilgi:** bu sayfa, iletişim, depo ve hakkında diyaloğu.
 

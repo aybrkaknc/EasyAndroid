@@ -3,6 +3,7 @@ package com.aybrkaknc.easyandroid.job
 import android.content.Context
 import com.aybrkaknc.easyandroid.Env
 import com.aybrkaknc.easyandroid.R
+import com.aybrkaknc.easyandroid.TrustedPc
 import com.aybrkaknc.easyandroid.core.AppException
 import com.aybrkaknc.easyandroid.core.ErrorCode
 import com.aybrkaknc.easyandroid.core.FileSetKind
@@ -14,6 +15,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * Backups that the PC asks the phone for: messages, call logs, wallpapers and system settings.
@@ -30,18 +33,44 @@ object PcJobs {
         "wallpaper" to FileSetKind.WALLPAPER,
     )
 
-    /** Runs the job that the PC left, if any. Meant to be called off the main thread. */
-    fun runPending(context: Context) {
+    private val lock = Mutex()
+
+    /**
+     * Runs the job that the PC left, if any. Returns when the job was started or refused, which is
+     * after the user answered when the PC is not trusted.
+     */
+    suspend fun runPending(context: Context) {
+        // In a scope of its own, so that closing the screen does not take the question back.
+        scope.launch { lock.withLock { takePending(context) } }.join()
+    }
+
+    private suspend fun takePending(context: Context) {
         val link = Env.pc()
         val job = runCatching { link.pendingJob() }.getOrNull() ?: return
-        // One job at a time: the PC is told when this phone is busy, and the job file stays for later.
-        if (Jobs.state.value?.finished == false) {
-            link.reportJob(PcStatus(job.id, "failed", error = context.getString(R.string.pc_job_busy)))
-            link.takeJob()
-            return
-        }
         link.takeJob()
+        if (isBusy(context, job)) return
+        if (Env.prefs.trustedPcs().none { it.id == job.pc && job.pc.isNotEmpty() }) {
+            val stage = if (PcApproval.canNotify(context)) "approval" else "open"
+            link.reportJob(PcStatus(job.id, "waiting", stage = stage))
+            val answer = PcApproval.ask(context, job) { runCatching { link.cancelRequested(job.id) }.getOrDefault(false) }
+            when (answer) {
+                PcAnswer.REJECT -> return link.reportJob(PcStatus(job.id, "rejected"))
+                PcAnswer.EXPIRED -> return link.reportJob(PcStatus(job.id, "expired"))
+                PcAnswer.CANCELLED -> return link.reportJob(PcStatus(job.id, "cancelled"))
+                PcAnswer.TRUST -> if (job.pc.isNotEmpty()) Env.prefs.trustPc(TrustedPc(job.pc, PcApproval.pcName(context, job)))
+                PcAnswer.ONCE -> {}
+            }
+            // Another job may have started while the question was open.
+            if (isBusy(context, job)) return
+        }
         run(context, job)
+    }
+
+    /** One job at a time: the PC is told when this phone is busy. */
+    private fun isBusy(context: Context, job: PcJob): Boolean {
+        if (Jobs.state.value?.finished != false) return false
+        Env.pc().reportJob(PcStatus(job.id, "failed", error = context.getString(R.string.pc_job_busy)))
+        return true
     }
 
     private fun run(context: Context, job: PcJob) {

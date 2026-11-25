@@ -125,13 +125,64 @@ class PcLinkTest {
     }
 
     @Test
-    fun cancellingTellsThePcAndWaitsForItsAnswer() {
+    fun cancellingEndsTheWaitAndLeavesWordForThePc() {
         val box = Mailbox()
-        box.statuses += listOf(status("running"), status("cancelled"))
-        var cancel = false
-        val task = Task({ cancel }) { _, _, _ -> cancel = true }
+        box.statuses += status("running")
+        val task = Task({ box.status.isNotEmpty() }) { _, _, _ -> }
         failsWith(ErrorCode.CANCELLED) { PcLink(box, box::pause).send(request(), task) }
         assertEquals("job-1", box.cancel)
+        // Neither this job nor the next one takes the word back before the PC has read it.
+        box.status = ""
+        box.statuses += status("done")
+        PcLink(box, box::pause).send(request(), Task())
+        assertFalse(box.calls.any { it.startsWith("rm -f") && "/cancel" in it })
+    }
+
+    @Test
+    fun waitingSaysWhatItIsFor() {
+        val box = Mailbox()
+        box.statuses += listOf(status("waiting", ",\"stage\":\"busy\""), status("waiting", ",\"stage\":\"approval\""), status("done"))
+        val seen = ArrayList<Stage>()
+        PcLink(box, box::pause).send(request(), Task { stage, _, _ -> seen += stage })
+        assertEquals(listOf(Stage.TRANSFER, Stage.QUEUED, Stage.WAITING), seen)
+    }
+
+    @Test
+    fun anUnansweredRequestIsNotARefusal() {
+        val box = Mailbox().apply { statuses += status("rejected", ",\"error\":\"expired\"") }
+        failsWith(ErrorCode.PC_EXPIRED) { PcLink(box, box::pause).send(request(), Task()) }
+    }
+
+    @Test
+    fun aRequestThePcCouldNotReadEndsTheWait() {
+        val box = Mailbox().apply { statuses += """{"id":"","state":"rejected","error":"unreadable"}""" }
+        failsWith(ErrorCode.PC_REJECTED) { PcLink(box, box::pause).send(request(), Task()) }
+    }
+
+    @Test
+    fun onlyOneRequestAtATime() {
+        val box = Mailbox()
+        val link = PcLink(box) {
+            failsWith(ErrorCode.PC_BUSY) { PcLink(box, box::pause).send(request(), Task()) }
+            box.status = status("done")
+        }
+        link.send(request(), Task())
+    }
+
+    @Test
+    fun theRequestsOfOneTapShareAGroup() {
+        val box = Mailbox().apply { statuses += status("done") }
+        PcLink(box, box::pause).send(request().copy(batch = "g-1", index = 2, size = 3), Task())
+        assertTrue(Regex("\"batch\": \"g-1\"").containsMatchIn(box.request!!))
+        assertTrue(Regex("\"index\": 2").containsMatchIn(box.request!!))
+        assertTrue(Regex("\"size\": 3").containsMatchIn(box.request!!))
+    }
+
+    @Test
+    fun aJobSaysWhichPcItIsFrom() {
+        val box = Mailbox()
+        box.job = """{"id":"j-1","created":990,"type":"system","pc":"abc","pcName":"DESK"}"""
+        assertEquals("abc" to "DESK", PcLink(box).pendingJob()!!.let { it.pc to it.pcName })
     }
 
     @Test

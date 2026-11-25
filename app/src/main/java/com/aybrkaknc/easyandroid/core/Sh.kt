@@ -6,6 +6,9 @@ enum class ErrorCode {
 
     /** EasyADB is not looking at this phone, or the PC was lost, refused or failed. */
     PC_MISSING, PC_LOST, PC_REJECTED, PC_FAILED,
+
+    /** Nobody answered on the PC, or another job for the PC runs here. */
+    PC_EXPIRED, PC_BUSY,
 }
 
 class AppException(val code: ErrorCode, val detail: String = "") : Exception("$code: $detail")

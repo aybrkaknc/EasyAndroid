@@ -2,8 +2,10 @@ package com.aybrkaknc.easyandroid
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aybrkaknc.easyandroid.core.PcRecord
 import com.aybrkaknc.easyandroid.core.StoredBackups
 import com.aybrkaknc.easyandroid.core.SuRoot
+import com.aybrkaknc.easyandroid.job.PcJobs
 import com.aybrkaknc.easyandroid.job.UiText
 import com.aybrkaknc.easyandroid.job.errorText
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +23,12 @@ class MainViewModel : ViewModel() {
     val backups = MutableStateFlow<StoredBackups?>(null)
     val error = MutableStateFlow<UiText?>(null)
 
+    /** App backups that the PC holds, as EasyADB reports them. */
+    val pcBackups = MutableStateFlow<List<PcRecord>>(emptyList())
+
+    /** Backups that the PC has now as well, offered for removal from this phone. */
+    val deleteOffer = MutableStateFlow<List<String>>(emptyList())
+
     init {
         checkRoot()
     }
@@ -32,6 +40,8 @@ class MainViewModel : ViewModel() {
             root.value = if (granted) RootState.GRANTED else RootState.MISSING
             if (granted) {
                 refresh()
+                // The PC may have left a job while the app was closed.
+                withContext(Dispatchers.IO) { runCatching { PcJobs.runPending(Env.app) } }
             }
         }
     }
@@ -43,7 +53,10 @@ class MainViewModel : ViewModel() {
         refreshBackups()
     }
 
-    fun refreshBackups() = run { backups.value = Env.store().list() }
+    fun refreshBackups() = run {
+        backups.value = Env.store().list()
+        pcBackups.value = runCatching { Env.pc().records() }.getOrDefault(emptyList())
+    }
 
     /** Runs [block] off the main thread and shows its error, if any. */
     fun run(block: suspend () -> Unit) {

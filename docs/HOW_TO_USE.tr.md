@@ -19,8 +19,9 @@ EasyAndroid, root'lu bir Android telefonda PC olmadan uygulamaları yedekler, ge
 7. [Debloat](#debloat)
 8. [Kablosuz hata ayıklama ve EasyADB](#kablosuz-hata-ayıklama-ve-easyadb)
 9. [Yedekleri PC'ye taşıma](#yedekleri-pcye-taşıma)
-10. [Ayarlar](#ayarlar)
-11. [Bilinmesi gerekenler](#bilinmesi-gerekenler)
+10. [Doğrudan PC'ye yedekleme](#doğrudan-pcye-yedekleme)
+11. [Ayarlar](#ayarlar)
+12. [Bilinmesi gerekenler](#bilinmesi-gerekenler)
 
 ## Başlamadan önce
 
@@ -81,7 +82,19 @@ Bunlar dosya kopyası olarak, her seferinde ayrı bir yedek halinde saklanır ve
 
 * Telefonu biçimlendirmeden önce dahili depolamadaki `EasyAndroid/Backups` klasörünü PC'ye kopyalayın, yeni ROM kurulduktan sonra geri kopyalayın. EasyADB klasörü doğrudan açabilir.
 * Tek bir yedek **Geri Yükle**'den tek dosyalık `.easybckp` olarak dışa aktarılabilir ve **.easybckp içe aktar** ile geri alınabilir.
-* Sıkıştırılmamış yedekler iki yönde de EasyADB biçimini kullanır. zstd ile sıkıştırılmış yedekler daha küçüktür ama EasyADB bunları henüz okuyamaz.
+* Yedekler iki yönde de EasyADB biçimini kullanır, zstd ile sıkıştırılmış olanlar da.
+
+## Doğrudan PC'ye yedekleme
+
+Bunun için telefona adb ile (USB veya Kablosuz hata ayıklama) bağlı bir PC'de EasyADB açık olmalı ve telefonun kabuğuna (shell) root verilmiş olmalı. EasyADB isteyince root yöneticinizde izin verin.
+
+* Bir yedekleme panelinde veya diyalogunda **Bu telefon** yerine **PC (EasyADB)** seçin. Bir PC bağlanana kadar soluk kalır. İlk seferde EasyADB PC'de sorar; sorulmaması için **Bu telefona güven**'i seçin. Bir paneli her açtığınızda seçim **Bu telefon** olarak gelir.
+* Uygulamalar okundukça PC'ye gönderilir ve telefonda yer kaplamaz. PC için zstd sıkıştırması kullanılamaz.
+* Klasörler **Doğrudan PC'ye** gider ya da önce telefonda alınır; bunun için klasörler kadar boş yer gerekir. Mesajlar, arama kayıtları, duvar kâğıtları ve sistem ayarları her zaman önce telefonda alınır, sonra kopyalanır.
+* PC kendi kopyasını doğruladığında uygulama telefondaki kopyanın silinip silinmeyeceğini sorar. Cevabınız olmadan hiçbir şey silinmez.
+* PC'nin elindeki uygulamalar **Bekleyen uygulamaları yedekle** ve **Güncellenen uygulamaları yedekle** için yedeklenmiş sayılır.
+* PC'den, EasyADB'nin **Telefon verileri** sekmesi bu telefondan mesaj, arama kaydı, duvar kâğıdı ve sistem ayarı yedeklerini ister ve kopyalar. Telefon çalışırken EasyAndroid ekranda açılabilir.
+* Kabuğa root vermek, telefonla eşleşmiş her PC'nin telefonda root komutu çalıştırabilmesi demektir. Yalnızca kendi PC'lerinizi eşleştirin.
 
 ## Ayarlar
 

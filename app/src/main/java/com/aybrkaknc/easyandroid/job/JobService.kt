@@ -16,6 +16,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** Keeps the process alive while a job runs and shows its progress. */
 class JobService : Service() {
@@ -30,6 +31,8 @@ class JobService : Service() {
         )
         startForeground(PROGRESS, notification(Jobs.state.value), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
         scope.launch {
+            // EasyADB starts this service to hand over a job; it is read before the service decides it is idle.
+            withContext(Dispatchers.IO) { runCatching { PcJobs.runPending(applicationContext) } }
             while (true) {
                 val state = Jobs.state.value
                 if (state == null || state.finished) {

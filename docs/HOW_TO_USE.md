@@ -19,8 +19,9 @@ EasyAndroid backs up, restores and debloats apps on a rooted Android phone, with
 7. [Debloat](#debloat)
 8. [Wireless debugging and EasyADB](#wireless-debugging-and-easyadb)
 9. [Moving backups to a PC](#moving-backups-to-a-pc)
-10. [Settings](#settings)
-11. [Good to know](#good-to-know)
+10. [Back up straight to a PC](#back-up-straight-to-a-pc)
+11. [Settings](#settings)
+12. [Good to know](#good-to-know)
 
 ## Before you start
 
@@ -81,7 +82,19 @@ These are saved as copies of files, one backup for each time, and listed under t
 
 * Copy `EasyAndroid/Backups` from the internal storage to the PC before you format the phone, and copy it back after the new ROM is installed. EasyADB can open the folder directly.
 * A single backup can be exported as one `.easybckp` file from **Restore** and imported again with **Import .easybckp**.
-* Uncompressed backups use EasyADB's format in both directions. zstd compressed backups are smaller but EasyADB cannot read them yet.
+* Backups use EasyADB's format in both directions, zstd compressed ones too.
+
+## Back up straight to a PC
+
+This needs EasyADB open on a PC that is connected to the phone with adb (USB or Wireless debugging) and root for the phone's shell: allow it in your root manager when EasyADB asks.
+
+* In a backup sheet or dialog choose **PC (EasyADB)** instead of **This phone**. It stays dimmed until a PC is connected. The first time, EasyADB asks on the PC; choose **Trust this phone** to stop being asked. The choice is **This phone** every time you open a sheet.
+* Apps are sent to the PC as they are read and take no space on the phone. zstd compression is not available for the PC.
+* Folders go **Straight to the PC** or are made on the phone first, which needs as much free space as the folders. Messages, call logs, wallpapers and system settings are always made on the phone first and copied afterwards.
+* When the PC has checked its copy, the app asks whether to delete the copy on the phone. Nothing is deleted without your answer.
+* Apps that the PC holds count as saved for **Back up pending apps** and **Back up updated apps**.
+* From the PC, the **Phone data** tab of EasyADB asks this phone for messages, call logs, wallpapers and system settings and copies them over. EasyAndroid may open on the phone while it works.
+* Giving root to the shell lets every PC that is paired with the phone run root commands on it. Pair only PCs you own.
 
 ## Settings
 

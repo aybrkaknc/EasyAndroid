@@ -70,11 +70,13 @@ private fun ChipRows(vararg chips: ChipSpec) {
 /** What goes into a backup of apps. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BackupSheet(count: Int, onDismiss: () -> Unit, note: String? = null, onConfirm: (BackupOptions) -> Unit) {
+fun BackupSheet(count: Int, onDismiss: () -> Unit, note: String? = null, onConfirm: (BackupOptions, Target) -> Unit) {
     var options by remember { mutableStateOf(Env.prefs.state.value.backup) }
+    var target by remember { mutableStateOf(Target.PHONE) }
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.verticalScroll(rememberScrollState()).padding(start = 16.dp, end = 16.dp, bottom = 24.dp)) {
             Text(stringResource(R.string.back_up_count, count), style = MaterialTheme.typography.titleLarge)
+            TargetChips(target, { target = it }, Modifier.padding(top = 16.dp))
             Text(stringResource(R.string.sheet_parts), Modifier.padding(top = 16.dp, bottom = 12.dp), style = MaterialTheme.typography.titleMedium)
             ChipRows(
                 ChipSpec(R.string.part_apk, selected = true, enabled = false),
@@ -83,12 +85,14 @@ fun BackupSheet(count: Int, onDismiss: () -> Unit, note: String? = null, onConfi
                 ChipSpec(R.string.part_expansion, options.obb) { options = options.copy(obb = !options.obb) },
             )
             Text(stringResource(R.string.compression), Modifier.padding(top = 20.dp, bottom = 12.dp), style = MaterialTheme.typography.titleMedium)
+            // The PC receives plain archives, which is also what EasyADB writes itself.
+            val zstd = options.compress && target == Target.PHONE
             ChipRows(
-                ChipSpec(R.string.compression_none, !options.compress) { options = options.copy(compress = false) },
-                ChipSpec(R.string.compression_zstd, options.compress) { options = options.copy(compress = true) },
+                ChipSpec(R.string.compression_none, !zstd) { options = options.copy(compress = false) },
+                ChipSpec(R.string.compression_zstd, zstd, enabled = target == Target.PHONE) { options = options.copy(compress = true) },
             )
             if (note != null) Text(note, Modifier.padding(top = 16.dp), color = MaterialTheme.colorScheme.error)
-            Button({ onConfirm(options) }, Modifier.fillMaxWidth().padding(top = 20.dp).heightIn(min = 56.dp)) {
+            Button({ onConfirm(if (target == Target.PC) options.copy(compress = false) else options, target) }, Modifier.fillMaxWidth().padding(top = 20.dp).heightIn(min = 56.dp)) {
                 Text(stringResource(R.string.sheet_backup), style = MaterialTheme.typography.titleMedium)
             }
         }

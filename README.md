@@ -58,7 +58,8 @@ Changing custom ROMs often means downloading every app again and setting everyth
 
 * **Backup and restore:** APKs and split APKs, app data, device protected data, OBB and, optionally, `Android/data`. Select many apps at once. Every file has a SHA-256 checksum and is verified before anything on the phone changes.
 * **Permissions:** Runtime permissions, special access and battery exemptions come back with the app.
-* **Works with EasyADB:** Uncompressed backups use EasyADB's format in both directions. Export and import single `.easybckp` files. zstd compression is optional and cannot be read by EasyADB yet.
+* **Works with EasyADB:** Backups use EasyADB's format in both directions, zstd ones too. Export and import single `.easybckp` files.
+* **Straight to a PC:** Choose PC instead of this phone in any backup sheet. EasyADB on the PC receives apps and folders as they are read, and copies messages, call logs, wallpapers and system settings once they are made. It can also ask this phone for them.
 * **Debloat:** Descriptions and safety levels from the UAD-NG list, batch disable or uninstall, bring back, and profiles that can be shared with EasyADB. Packages marked unsafe are locked.
 * **System:** Saves system settings, default apps and Wi-Fi networks, and lists only what differs before restoring.
 * **Wireless debugging:** Turn it on or off, see the connect address and open the QR or pairing code screen with one tap, to pair with EasyADB on a PC.
@@ -147,7 +148,6 @@ EA_SERIAL=emulator-5554 EA_PACKAGE=com.aybrkaknc.easyandroid ./gradlew testDebug
 ## Roadmap
 
 - [ ] Scheduled backups
-- [ ] zstd backups in EasyADB
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

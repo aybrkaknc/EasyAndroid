@@ -123,13 +123,14 @@ private fun QuickRow(title: String, enabled: Boolean, summary: String? = null, d
 fun QuickSheet(kind: QuickKind, model: MainViewModel, enabled: Boolean, onDismiss: () -> Unit, onEvent: (QuickEvent) -> Unit) {
     val stored by model.backups.collectAsStateWithLifecycle()
     val apps by model.apps.collectAsStateWithLifecycle()
+    val pc by model.pcBackups.collectAsStateWithLifecycle()
     val resources = LocalContext.current.resources
     val formatter = rememberRelativeFormatter()
     val now = remember(stored) { Instant.now() }
     val list = stored
-    val targets = remember(apps, list) {
+    val targets = remember(apps, list, pc) {
         val installed = apps
-        if (installed == null || list == null) null else QuickTargets(installed, list.backups, Env.debloat()::isProtected)
+        if (installed == null || list == null) null else QuickTargets(installed, list.backups, pc, Env.debloat()::isProtected)
     }
 
     fun choose(event: QuickEvent) {

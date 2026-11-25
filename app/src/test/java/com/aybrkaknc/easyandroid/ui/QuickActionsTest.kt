@@ -3,6 +3,7 @@ package com.aybrkaknc.easyandroid.ui
 import com.aybrkaknc.easyandroid.AppInfo
 import com.aybrkaknc.easyandroid.core.DeviceSnapshot
 import com.aybrkaknc.easyandroid.core.Manifest
+import com.aybrkaknc.easyandroid.core.PcRecord
 import com.aybrkaknc.easyandroid.core.StoredBackup
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -39,6 +40,17 @@ class QuickActionsTest {
         assertEquals(listOf("a.fresh"), backed(QuickAction.BACKUP_PENDING))
         assertEquals(listOf("a.updated"), backed(QuickAction.BACKUP_UPDATED))
         assertEquals(listOf("a.updated", "a.older", "a.same"), backed(QuickAction.BACKUP_REDO))
+    }
+
+    @Test
+    fun whatThePcHoldsCountsAsSaved() {
+        val pc = listOf(PcRecord("a.fresh", "1.0", "2026-01-01"), PcRecord("a.updated", "2.0", "2026-01-02"))
+        val held = QuickTargets(apps, backups, pc) { it == "a.core" }
+        // The app that only the PC has is no longer pending, and the one it has in a newer version is up to date.
+        assertEquals(emptyList<String>(), held.backup(QuickAction.BACKUP_PENDING).map { it.packageName })
+        assertEquals(emptyList<String>(), held.backup(QuickAction.BACKUP_UPDATED).map { it.packageName })
+        // Backing up again only looks at the phone's own backups.
+        assertEquals(listOf("a.updated", "a.older", "a.same"), held.backup(QuickAction.BACKUP_REDO).map { it.packageName })
     }
 
     @Test

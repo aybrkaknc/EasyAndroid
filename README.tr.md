@@ -58,7 +58,8 @@ Sık sık custom ROM değiştirmek, her seferinde tüm uygulamaları yeniden ind
 
 * **Yedekleme ve geri yükleme:** APK ve bölünmüş APK'lar, uygulama verisi, cihaz korumalı veri, OBB ve isteğe bağlı olarak `Android/data`. Birçok uygulama birlikte seçilebilir. Her dosyanın SHA-256 özeti vardır ve telefonda bir şey değişmeden önce doğrulanır.
 * **İzinler:** Çalışma zamanı izinleri, özel erişim ve pil istisnaları uygulamayla birlikte geri gelir.
-* **EasyADB ile uyumlu:** Sıkıştırılmamış yedekler iki yönde de EasyADB biçimini kullanır. Tek dosyalık `.easybckp` dışa ve içe aktarılabilir. zstd sıkıştırması isteğe bağlıdır ve EasyADB tarafından henüz okunamaz.
+* **EasyADB ile uyumlu:** Yedekler iki yönde de EasyADB biçimini kullanır, zstd olanlar da. Tek dosyalık `.easybckp` dışa ve içe aktarılabilir.
+* **Doğrudan PC'ye:** Herhangi bir yedekleme panelinde bu telefon yerine PC'yi seçin. PC'deki EasyADB uygulamaları ve klasörleri okundukça alır, mesaj, arama kaydı, duvar kâğıdı ve sistem ayarı yedeklerini ise alındıktan sonra kopyalar. Bunları bu telefondan kendisi de isteyebilir.
 * **Debloat:** UAD-NG listesinden açıklamalar ve güvenlik seviyeleri, toplu devre dışı bırakma veya kaldırma, geri getirme ve EasyADB ile paylaşılabilen profiller. Güvensiz olarak işaretlenen paketler kilitlidir.
 * **Sistem:** Sistem ayarlarını, varsayılan uygulamaları ve Wi-Fi ağlarını saklar, geri yüklemeden önce yalnızca farkları listeler.
 * **Kablosuz hata ayıklama:** Açıp kapatın, bağlantı adresini görün ve PC'deki EasyADB ile eşleşmek için QR veya eşleştirme kodu ekranını tek dokunuşla açın.
@@ -146,7 +147,6 @@ EA_SERIAL=emulator-5554 EA_PACKAGE=com.aybrkaknc.easyandroid ./gradlew testDebug
 ## Yol Haritası
 
 - [ ] Zamanlanmış yedekler
-- [ ] EasyADB'de zstd yedekleri
 
 <p align="right">(<a href="#readme-top">başa dön</a>)</p>
 

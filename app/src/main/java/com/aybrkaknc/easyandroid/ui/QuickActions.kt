@@ -3,6 +3,7 @@ package com.aybrkaknc.easyandroid.ui
 import androidx.annotation.StringRes
 import com.aybrkaknc.easyandroid.AppInfo
 import com.aybrkaknc.easyandroid.R
+import com.aybrkaknc.easyandroid.core.PcRecord
 import com.aybrkaknc.easyandroid.core.StoredBackup
 
 /** The choices of the apps sheet. Each one picks its apps with [QuickTargets]. */
@@ -27,8 +28,11 @@ enum class QuickAction(@param:StringRes val title: Int) {
 class QuickTargets(
     private val apps: List<AppInfo>,
     private val backups: List<StoredBackup>,
+    pc: List<PcRecord> = emptyList(),
     private val isProtected: (String) -> Boolean,
 ) {
+    /** What the PC holds counts as saved too, so that the same app is not asked for twice. */
+    private val held = pc.groupBy { it.packageName }.mapValues { (_, records) -> records.maxBy { it.createdAt } }
     private val installed = apps.filter { it.installed }.associateBy { it.packageName }
     private val newest = backups.distinctBy { it.manifest.packageName }.associateBy { it.manifest.packageName }
 
@@ -36,8 +40,11 @@ class QuickTargets(
         val saved = newest[app.packageName]
         when (action) {
             QuickAction.BACKUP_ALL -> true
-            QuickAction.BACKUP_PENDING -> saved == null
-            QuickAction.BACKUP_UPDATED -> saved != null && isNewer(app.versionName, saved.manifest.versionName.orEmpty())
+            QuickAction.BACKUP_PENDING -> saved == null && app.packageName !in held
+            QuickAction.BACKUP_UPDATED -> {
+                val known = listOfNotNull(saved?.manifest?.versionName, held[app.packageName]?.versionName)
+                known.isNotEmpty() && known.all { isNewer(app.versionName, it) }
+            }
             QuickAction.BACKUP_REDO -> saved != null
             else -> false
         }

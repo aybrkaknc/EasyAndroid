@@ -111,15 +111,15 @@ fun HomeScreen(
         }
     }
     backing?.let { kind ->
-        FileSetBackupDialog(kind, onDismiss = { backing = null }) {
+        FileSetBackupDialog(kind, onDismiss = { backing = null }) { target ->
             backing = null
-            startFileBackup(model, kind, emptyList())
+            startFileBackup(model, kind, emptyList(), target)
         }
     }
     if (picking) {
-        FolderPickerDialog(emptySet(), onDismiss = { picking = false }) { names ->
+        FolderPickerDialog(emptySet(), onDismiss = { picking = false }) { names, target, direct ->
             picking = false
-            startFileBackup(model, FileSetKind.FOLDERS, names)
+            startFileBackup(model, FileSetKind.FOLDERS, names, target, direct)
         }
     }
     restoring?.let { item ->
@@ -206,6 +206,7 @@ private class BackupEntry(val kind: QuickKind, val icon: Painter, val tint: Colo
 @Composable
 private fun BackupList(model: MainViewModel, enabled: Boolean, onOpen: (QuickKind) -> Unit) {
     val stored by model.backups.collectAsStateWithLifecycle()
+    val pc by model.pcBackups.collectAsStateWithLifecycle()
     val resources = LocalContext.current.resources
     val formatter = rememberRelativeFormatter()
     val now = remember(stored) { Instant.now() }
@@ -216,7 +217,8 @@ private fun BackupList(model: MainViewModel, enabled: Boolean, onOpen: (QuickKin
     val entries = listOf(
         BackupEntry(
             QuickKind.APPS, painterResource(R.drawable.ic_android), Category.BACKUP,
-            list?.backups.orEmpty().mapNotNull { parseTimestamp(it.manifest.createdAt)?.toInstant() },
+            list?.backups.orEmpty().mapNotNull { parseTimestamp(it.manifest.createdAt)?.toInstant() } +
+                pc.mapNotNull { parseTimestamp(it.createdAt)?.toInstant() },
         ),
         BackupEntry(QuickKind.MESSAGES, painterResource(R.drawable.ic_message), Category.MESSAGES, files(FileSetKind.MESSAGES)),
         BackupEntry(QuickKind.CALLS, rememberVectorPainter(Icons.Default.Call), Category.CALLS, files(FileSetKind.CALLS)),

@@ -3,6 +3,9 @@ package com.aybrkaknc.easyandroid.core
 enum class ErrorCode {
     NO_ROOT, INVALID_INPUT, NOT_FOUND, NO_SPACE, BACKUP_INVALID, INTEGRITY, INSTALL_FAILED,
     COMMAND_FAILED, PROTECTED, CANCELLED, UNSUPPORTED,
+
+    /** EasyADB is not looking at this phone, or the PC was lost, refused or failed. */
+    PC_MISSING, PC_LOST, PC_REJECTED, PC_FAILED,
 }
 
 class AppException(val code: ErrorCode, val detail: String = "") : Exception("$code: $detail")

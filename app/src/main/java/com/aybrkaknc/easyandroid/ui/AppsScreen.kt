@@ -39,8 +39,11 @@ import com.aybrkaknc.easyandroid.R
 import com.aybrkaknc.easyandroid.core.BackupOptions
 import com.aybrkaknc.easyandroid.core.Sh
 import com.aybrkaknc.easyandroid.core.parseTimestamp
+import com.aybrkaknc.easyandroid.core.PcLink
+import com.aybrkaknc.easyandroid.core.PcRequest
 import com.aybrkaknc.easyandroid.job.Jobs
 import com.aybrkaknc.easyandroid.job.noteText
+import com.aybrkaknc.easyandroid.job.pcNoteText
 
 enum class AppSort { NAME, INSTALL, UPDATE, BACKUP_DATE, BACKUP_SIZE }
 
@@ -148,11 +151,11 @@ fun AppsScreen(model: MainViewModel, preselected: Set<String> = emptySet()) {
             selected.size,
             onDismiss = { asking = false },
             note = if (system > 0) stringResource(R.string.quick_system_note, system) else null,
-        ) { options ->
+        ) { options, target ->
             asking = false
             val chosen = all.filter { it.packageName in selected }
             selected = emptySet()
-            startBackup(model, chosen, options)
+            startBackup(model, chosen, options, target)
         }
     }
     if (sorting) {
@@ -164,10 +167,18 @@ fun AppsScreen(model: MainViewModel, preselected: Set<String> = emptySet()) {
     }
 }
 
-fun startBackup(model: MainViewModel, apps: List<AppInfo>, options: BackupOptions) {
+fun startBackup(model: MainViewModel, apps: List<AppInfo>, options: BackupOptions, target: Target = Target.PHONE) {
     val engine = Env.backups()
     val device by lazy { engine.snapshot() }
     Jobs.start(Env.app, R.string.job_backup, apps, { it.label }, after = { model.refreshBackups() }) { app, task ->
-        engine.backup(app.packageName, app.label, options, device, task).notes.map(::noteText)
+        if (target == Target.PC) {
+            val request = PcRequest(
+                id = PcLink.newId(), created = 0, type = "app", packageName = app.packageName,
+                data = options.data, obb = options.obb, externalData = options.externalData,
+            )
+            Env.pc().send(request, task).notes.map(::pcNoteText)
+        } else {
+            engine.backup(app.packageName, app.label, options, device, task).notes.map(::noteText)
+        }
     }
 }

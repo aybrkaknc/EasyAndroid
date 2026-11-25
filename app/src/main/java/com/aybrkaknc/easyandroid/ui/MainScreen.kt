@@ -72,6 +72,7 @@ fun MainScreen(model: MainViewModel) {
     val root by model.root.collectAsStateWithLifecycle()
     val job by Jobs.state.collectAsStateWithLifecycle()
     val error by model.error.collectAsStateWithLifecycle()
+    val offer by model.deleteOffer.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableStateOf(Tab.HOME) }
     var showApps by rememberSaveable { mutableStateOf(false) }
     var showSystem by rememberSaveable { mutableStateOf(false) }
@@ -89,7 +90,7 @@ fun MainScreen(model: MainViewModel) {
     val homeScroll = rememberScrollState()
 
     fun perform(action: QuickAction) {
-        val targets = QuickTargets(apps ?: return, stored?.backups ?: return, Env.debloat()::isProtected)
+        val targets = QuickTargets(apps ?: return, stored?.backups ?: return, model.pcBackups.value, Env.debloat()::isProtected)
         fun <T> check(items: List<T>, use: (List<T>) -> Unit) {
             if (items.isEmpty()) Toast.makeText(context, R.string.nothing_to_do, Toast.LENGTH_SHORT).show() else use(items)
         }
@@ -199,6 +200,25 @@ fun MainScreen(model: MainViewModel) {
     }
 
     if (showEasyAdb) WirelessSheet(model, easyAdb = true) { showEasyAdb = false }
+
+    // The PC checked its copy, so the one on the phone can go. Never without asking.
+    if (offer.isNotEmpty() && job == null) {
+        ConfirmDialog(
+            title = stringResource(R.string.pc_delete_title),
+            confirm = stringResource(R.string.delete),
+            dismiss = stringResource(R.string.pc_keep),
+            onConfirm = {
+                val ids = offer
+                model.deleteOffer.value = emptyList()
+                model.run {
+                    val store = Env.store()
+                    ids.forEach(store::delete)
+                    model.refreshBackups()
+                }
+            },
+            onDismiss = { model.deleteOffer.value = emptyList() },
+        ) { Text(stringResource(R.string.pc_delete_text, offer.size), color = MaterialTheme.colorScheme.error) }
+    }
 
     deleting?.let { ids ->
         ConfirmDialog(

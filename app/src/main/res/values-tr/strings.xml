@@ -158,7 +158,7 @@
     <string name="compression_none">Yok</string>
     <string name="compression_none_hint">Hızlıdır ve PC\'de EasyADB ile geri yüklenebilir. Daha çok yer kaplar.</string>
     <string name="compression_zstd">zstd</string>
-    <string name="compression_zstd_hint">Daha az yer kaplar ama yavaştır. EasyADB henüz okuyamaz.</string>
+    <string name="compression_zstd_hint">Daha az yer kaplar ama yavaştır. Yedeği PC aldığında kullanılamaz.</string>
 
     <string name="already_installed">%1$s zaten kurulu</string>
     <string name="installed_version">Kurulu: %1$s</string>
@@ -299,4 +299,23 @@
     <string name="err_protected">Korumalı, değiştirilmedi: %1$s</string>
     <string name="err_cancelled">İptal edildi. %1$s</string>
     <string name="err_unsupported">Bu Android sürümünde desteklenmiyor: %1$s</string>
+    <string name="err_pc_missing">PC bağlı değil. PC\'de EasyADB\'yi açın ve bu telefonu adb ile bağlayın.</string>
+    <string name="err_pc_lost">PC yanıt vermeyi bıraktı. İşten hiçbir şey saklanmadı.</string>
+    <string name="err_pc_rejected">PC işi reddetti.</string>
+    <string name="err_pc_failed">PC işi bitiremedi: %1$s</string>
+    <string name="stage_transfer">PC bekleniyor</string>
+    <string name="note_pc_data_skipped">Uygulama verisi kopyalanmadı.</string>
+    <string name="target_title">HEDEF</string>
+    <string name="target_phone">Bu telefon</string>
+    <string name="target_pc">PC (EasyADB)</string>
+    <string name="target_pc_hint">EasyADB ilk seferde PC\'de size sorar. Güvendiğiniz bir PC sonra yedekleri kendi başlatabilir. Bu, telefonun shell\'ine root verildiği için çalışır.</string>
+    <string name="target_pc_missing">Bu telefona adb ile bağlı bir PC\'de EasyADB\'yi açın.</string>
+    <string name="target_direct">Doğrudan PC\'ye</string>
+    <string name="target_via_phone">Önce telefona</string>
+    <string name="target_direct_hint">Klasörler okundukça gönderilir ve telefonda yer kaplamaz.</string>
+    <string name="target_via_phone_hint">Yedek önce telefonda alınır, bu yüzden klasörler kadar boş yer gerekir.</string>
+    <string name="pc_delete_title">Telefondaki kopyalar silinsin mi?</string>
+    <string name="pc_keep">Kalsın</string>
+    <string name="pc_delete_text">PC %1$d yedeği aldı ve doğruladı. Bu telefondaki kopyalar silinsin mi? Bu geri alınamaz.</string>
+    <string name="pc_job_busy">Telefon başka bir işle meşgul.</string>
 </resources>

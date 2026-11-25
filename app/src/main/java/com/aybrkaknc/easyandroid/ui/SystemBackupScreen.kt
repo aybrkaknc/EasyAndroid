@@ -36,6 +36,8 @@ import com.aybrkaknc.easyandroid.MainViewModel
 import com.aybrkaknc.easyandroid.R
 import com.aybrkaknc.easyandroid.core.Stage
 import com.aybrkaknc.easyandroid.core.SystemItem
+import com.aybrkaknc.easyandroid.core.PcLink
+import com.aybrkaknc.easyandroid.core.PcRequest
 import com.aybrkaknc.easyandroid.job.Jobs
 import com.aybrkaknc.easyandroid.job.errorText
 import kotlinx.coroutines.Dispatchers
@@ -87,6 +89,7 @@ fun SystemBackupScreen(model: MainViewModel, onDone: () -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
     var searching by rememberSaveable { mutableStateOf(false) }
     var open by remember { mutableStateOf(emptySet<Part>()) }
+    var target by remember { mutableStateOf(Target.PHONE) }
 
     val all = items ?: return Loading()
     // Passwords stay out of a backup unless the user asks for them.
@@ -161,9 +164,10 @@ fun SystemBackupScreen(model: MainViewModel, onDone: () -> Unit) {
                 }
             }
         }
+        TargetChips(target, { target = it }, Modifier.padding(horizontal = 16.dp))
         Button(
             {
-                startBackup(model, all.filter { it in selected })
+                startBackup(model, all.filter { it in selected }, target)
                 onDone()
             },
             Modifier.fillMaxWidth().padding(16.dp),
@@ -172,13 +176,17 @@ fun SystemBackupScreen(model: MainViewModel, onDone: () -> Unit) {
     }
 }
 
-private fun startBackup(model: MainViewModel, items: List<SystemItem>) {
+private fun startBackup(model: MainViewModel, items: List<SystemItem>, target: Target) {
     Jobs.start(
         Env.app, R.string.job_system_backup, listOf(Unit), { Env.app.getString(R.string.tab_system) },
         after = { model.refreshBackups() },
     ) { _, task ->
         task.progress(Stage.SETTINGS)
-        Env.system().save(items, Env.backups().snapshot())
+        val name = Env.system().save(items, Env.backups().snapshot())
+        if (target == Target.PC) {
+            Env.pc().send(PcRequest(id = PcLink.newId(), created = 0, type = "pull", system = listOf(name)), task)
+            model.deleteOffer.value = listOf(name)
+        }
         emptyList()
     }
 }

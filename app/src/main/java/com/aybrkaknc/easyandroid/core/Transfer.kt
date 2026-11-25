@@ -7,15 +7,17 @@ import java.io.OutputStream
 import java.security.MessageDigest
 import kotlin.concurrent.thread
 
-enum class Stage { PREPARE, APK, OBB, DATA, FILES, VERIFY, INSTALL, PERMISSIONS, DEBLOAT, SETTINGS }
+enum class Stage { PREPARE, APK, OBB, DATA, FILES, VERIFY, INSTALL, PERMISSIONS, DEBLOAT, SETTINGS, TRANSFER }
 
 /** Progress and cancellation of one job. */
 class Task(
     private val isCancelled: () -> Boolean = { false },
     private val onProgress: (Stage, Long, Long) -> Unit = { _, _, _ -> },
 ) {
+    fun cancelled() = isCancelled()
+
     fun check() {
-        if (isCancelled()) throw AppException(ErrorCode.CANCELLED)
+        if (cancelled()) throw AppException(ErrorCode.CANCELLED)
     }
 
     fun progress(stage: Stage, done: Long = 0, total: Long = 0) = onProgress(stage, done, total)

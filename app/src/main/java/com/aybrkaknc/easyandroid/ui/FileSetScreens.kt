@@ -30,7 +30,10 @@ import com.aybrkaknc.easyandroid.R
 import com.aybrkaknc.easyandroid.core.FileSetKind
 import com.aybrkaknc.easyandroid.core.Folder
 import com.aybrkaknc.easyandroid.core.StoredFileSet
+import com.aybrkaknc.easyandroid.core.PcLink
+import com.aybrkaknc.easyandroid.core.PcRequest
 import com.aybrkaknc.easyandroid.job.Jobs
+import com.aybrkaknc.easyandroid.job.pcNoteText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -39,18 +42,21 @@ fun FileSetKind.title(): String = stringResource(titleOf(this))
 
 /** Folders of shared storage to pick from. Listing them takes a moment, so a spinner shows first. */
 @Composable
-fun FolderPickerDialog(initial: Set<String>, onDismiss: () -> Unit, onConfirm: (List<String>) -> Unit) {
+fun FolderPickerDialog(initial: Set<String>, onDismiss: () -> Unit, onConfirm: (List<String>, Target, Boolean) -> Unit) {
     val folders by produceState<List<Folder>?>(null) {
         value = withContext(Dispatchers.IO) { runCatching { Env.files().folders() }.getOrDefault(emptyList()) }
     }
     var selected by remember { mutableStateOf(initial) }
+    var target by remember { mutableStateOf(Target.PHONE) }
+    var direct by remember { mutableStateOf(true) }
     ConfirmDialog(
         title = stringResource(R.string.folder_picker_title),
         confirm = stringResource(R.string.folder_picker_confirm),
-        onConfirm = { onConfirm(selected.toList()) },
+        onConfirm = { onConfirm(selected.toList(), target, direct) },
         onDismiss = onDismiss,
         enabled = selected.isNotEmpty(),
     ) {
+        TargetChips(target, { target = it }, Modifier.padding(bottom = 12.dp), direct = direct, onDirect = { direct = it })
         Hint(stringResource(R.string.folder_picker_hint))
         val list = folders
         when {
@@ -110,16 +116,16 @@ fun FileSetBackups(model: MainViewModel, kinds: List<FileSetKind>) {
     }
 
     if (picking) {
-        FolderPickerDialog(emptySet(), onDismiss = { picking = false }) { names ->
+        FolderPickerDialog(emptySet(), onDismiss = { picking = false }) { names, target, direct ->
             picking = false
-            startFileBackup(model, kind, names)
+            startFileBackup(model, kind, names, target, direct)
         }
     }
 
     if (backing) {
-        FileSetBackupDialog(kind, onDismiss = { backing = false }) {
+        FileSetBackupDialog(kind, onDismiss = { backing = false }) { target ->
             backing = false
-            startFileBackup(model, kind, emptyList())
+            startFileBackup(model, kind, emptyList(), target)
         }
     }
 
@@ -151,13 +157,17 @@ fun FileSetBackups(model: MainViewModel, kinds: List<FileSetKind>) {
 
 /** Asks before a backup of a fixed kind starts, because a stray tap would make an empty-handed copy. */
 @Composable
-fun FileSetBackupDialog(kind: FileSetKind, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+fun FileSetBackupDialog(kind: FileSetKind, onDismiss: () -> Unit, onConfirm: (Target) -> Unit) {
+    var target by remember { mutableStateOf(Target.PHONE) }
     ConfirmDialog(
         title = stringResource(R.string.fileset_backup_title, kind.title()),
         confirm = stringResource(R.string.fileset_backup_confirm),
-        onConfirm = onConfirm,
+        onConfirm = { onConfirm(target) },
         onDismiss = onDismiss,
-    ) { Text(stringResource(R.string.fileset_backup_text)) }
+    ) {
+        Text(stringResource(R.string.fileset_backup_text))
+        TargetChips(target, { target = it }, Modifier.padding(top = 12.dp))
+    }
 }
 
 @Composable
@@ -182,12 +192,25 @@ fun FileSetRestoreDialog(item: StoredFileSet, onDismiss: () -> Unit, onConfirm: 
     }
 }
 
-/** [folders] only matter for media and folder backups. */
-fun startFileBackup(model: MainViewModel, kind: FileSetKind, folders: List<String>) {
+/**
+ * [folders] only matter for media and folder backups. On the PC, [direct] folders are streamed
+ * there as they are read; anything else is backed up on the phone first and then copied.
+ */
+fun startFileBackup(model: MainViewModel, kind: FileSetKind, folders: List<String>, target: Target = Target.PHONE, direct: Boolean = false) {
     val engine = Env.files()
     Jobs.start(Env.app, R.string.job_backup, listOf(kind), { Env.app.getString(titleOf(it)) }, after = { model.refreshBackups() }) { item, task ->
-        engine.backup(item, folders, Env.backups().snapshot(), task)
-        emptyList()
+        val pc = Env.pc()
+        if (target == Target.PC && direct && !kind.fixed) {
+            val request = PcRequest(id = PcLink.newId(), created = 0, type = "folders", names = folders)
+            pc.send(request, task).notes.map(::pcNoteText)
+        } else {
+            val id = engine.backup(item, folders, Env.backups().snapshot(), task)
+            if (target == Target.PC) {
+                pc.send(PcRequest(id = PcLink.newId(), created = 0, type = "pull", ids = listOf(id)), task)
+                model.deleteOffer.value = listOf(id)
+            }
+            emptyList()
+        }
     }
 }
 

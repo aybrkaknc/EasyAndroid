@@ -162,7 +162,7 @@
     <string name="compression_none">None</string>
     <string name="compression_none_hint">Fast and can be restored with EasyADB on a PC. Takes more space.</string>
     <string name="compression_zstd">zstd</string>
-    <string name="compression_zstd_hint">Takes less space but is slower. EasyADB cannot read it yet.</string>
+    <string name="compression_zstd_hint">Takes less space but is slower. Not available when the PC receives the backup.</string>
 
     <string name="already_installed">%1$s is already installed</string>
     <string name="installed_version">Installed: %1$s</string>
@@ -303,4 +303,23 @@
     <string name="err_protected">Protected, not changed: %1$s</string>
     <string name="err_cancelled">Cancelled. %1$s</string>
     <string name="err_unsupported">Not supported on this Android version: %1$s</string>
+    <string name="err_pc_missing">The PC is not connected. Open EasyADB on the PC and connect this phone with adb.</string>
+    <string name="err_pc_lost">The PC stopped answering. Nothing was kept of the job.</string>
+    <string name="err_pc_rejected">The PC refused the job.</string>
+    <string name="err_pc_failed">The PC could not finish the job: %1$s</string>
+    <string name="stage_transfer">Waiting for the PC</string>
+    <string name="note_pc_data_skipped">App data was not copied.</string>
+    <string name="target_title">DESTINATION</string>
+    <string name="target_phone">This phone</string>
+    <string name="target_pc">PC (EasyADB)</string>
+    <string name="target_pc_hint">EasyADB asks you on the PC the first time. A PC you trust can then start backups on its own. This works because the phone\'s shell has root.</string>
+    <string name="target_pc_missing">Open EasyADB on a PC that is connected to this phone with adb.</string>
+    <string name="target_direct">Straight to the PC</string>
+    <string name="target_via_phone">Phone first</string>
+    <string name="target_direct_hint">Folders are sent as they are read and take no space on the phone.</string>
+    <string name="target_via_phone_hint">The backup is made on the phone first, so it needs as much free space as the folders.</string>
+    <string name="pc_delete_title">Remove the copies on the phone?</string>
+    <string name="pc_keep">Keep</string>
+    <string name="pc_delete_text">The PC has %1$d backups and checked them. Delete the copies on this phone? This cannot be undone.</string>
+    <string name="pc_job_busy">The phone is busy with another job.</string>
 </resources>

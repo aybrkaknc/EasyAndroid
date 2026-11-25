@@ -139,6 +139,10 @@ fun errorText(error: Throwable): UiText {
         ErrorCode.PROTECTED -> R.string.err_protected
         ErrorCode.CANCELLED -> R.string.err_cancelled
         ErrorCode.UNSUPPORTED -> R.string.err_unsupported
+        ErrorCode.PC_MISSING -> R.string.err_pc_missing
+        ErrorCode.PC_LOST -> R.string.err_pc_lost
+        ErrorCode.PC_REJECTED -> R.string.err_pc_rejected
+        ErrorCode.PC_FAILED -> R.string.err_pc_failed
         ErrorCode.COMMAND_FAILED, null -> R.string.err_command_failed
     }
     return UiText(id, listOf(detail))
@@ -155,4 +159,13 @@ fun stageId(stage: Stage): Int = when (stage) {
     Stage.PERMISSIONS -> R.string.stage_permissions
     Stage.DEBLOAT -> R.string.stage_debloat
     Stage.SETTINGS -> R.string.stage_settings
+    Stage.TRANSFER -> R.string.stage_transfer
+}
+
+/** What the PC reports back about a backup it took, as lines of the job report. */
+fun pcNoteText(note: String): UiText {
+    val kind = note.substringBefore(':')
+    val detail = note.substringAfter(':', "")
+    return if (kind == "data_failed") UiText(R.string.note_data_failed, listOf(detail.trim().take(300)))
+    else UiText(R.string.note_pc_data_skipped)
 }

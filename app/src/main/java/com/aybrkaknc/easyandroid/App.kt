@@ -6,6 +6,7 @@ import com.aybrkaknc.easyandroid.core.BackupStore
 import com.aybrkaknc.easyandroid.core.Debloat
 import com.aybrkaknc.easyandroid.core.DebloatInfo
 import com.aybrkaknc.easyandroid.core.FileSetEngine
+import com.aybrkaknc.easyandroid.core.PcLink
 import com.aybrkaknc.easyandroid.core.RestoreEngine
 import com.aybrkaknc.easyandroid.core.SuRoot
 import com.aybrkaknc.easyandroid.core.SystemBackup
@@ -34,5 +35,6 @@ object Env {
     fun restores() = RestoreEngine(SuRoot, store())
     fun system() = SystemBackup(SuRoot, store())
     fun files() = FileSetEngine(SuRoot, store(), BuildConfig.VERSION_NAME)
+    fun pc() = PcLink(SuRoot)
     fun debloat() = Debloat(SuRoot, database, app.packageName)
 }

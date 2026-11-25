@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK, BLACK }
 
-data class Settings(val backupRoot: String, val theme: ThemeMode, val pinned: Set<String>, val backup: BackupOptions)
+data class Settings(val backupRoot: String, val theme: ThemeMode, val backup: BackupOptions)
 
 class Prefs(context: Context) {
     private val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
@@ -19,7 +19,6 @@ class Prefs(context: Context) {
     private fun load() = Settings(
         backupRoot = prefs.getString("backupRoot", null) ?: DEFAULT_ROOT,
         theme = ThemeMode.entries.firstOrNull { it.name == prefs.getString("theme", null) } ?: ThemeMode.SYSTEM,
-        pinned = prefs.getStringSet("pinned", null)?.toSet() ?: setOf("backup_all", "restore_all"),
         backup = BackupOptions(
             obb = prefs.getBoolean("backupObb", true),
             data = prefs.getBoolean("backupData", true),
@@ -30,13 +29,6 @@ class Prefs(context: Context) {
 
     fun setBackupRoot(path: String?) {
         prefs.edit { putString("backupRoot", path) }
-        flow.value = load()
-    }
-
-    /** Quick actions shown on Home. */
-    fun togglePinned(id: String) {
-        val pinned = flow.value.pinned
-        prefs.edit { putStringSet("pinned", if (id in pinned) pinned - id else pinned + id) }
         flow.value = load()
     }
 

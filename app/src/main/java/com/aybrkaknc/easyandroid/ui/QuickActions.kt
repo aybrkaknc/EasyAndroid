@@ -5,32 +5,16 @@ import com.aybrkaknc.easyandroid.AppInfo
 import com.aybrkaknc.easyandroid.R
 import com.aybrkaknc.easyandroid.core.StoredBackup
 
-enum class QuickSection(@param:StringRes val title: Int, @param:StringRes val hint: Int? = null) {
-    BACKUP(R.string.section_quick_backup),
-    RESTORE(R.string.section_quick_restore, R.string.section_quick_restore_hint),
-    OTHER(R.string.section_other),
-}
-
-enum class QuickButtons { NONE, TO, FROM, DELETE }
-
-/** [id] is stored in the preferences of pinned actions, so it must not change. */
-enum class QuickAction(
-    val id: String,
-    val section: QuickSection,
-    @param:StringRes val title: Int,
-    @param:StringRes val text: Int,
-    val buttons: QuickButtons,
-    val root: Boolean = false,
-) {
-    BACKUP_ALL("backup_all", QuickSection.BACKUP, R.string.action_backup_all, R.string.action_backup_all_text, QuickButtons.NONE),
-    BACKUP_PENDING("backup_pending", QuickSection.BACKUP, R.string.action_backup_pending, R.string.action_backup_pending_text, QuickButtons.TO),
-    BACKUP_UPDATED("backup_updated", QuickSection.BACKUP, R.string.action_backup_updated, R.string.action_backup_updated_text, QuickButtons.TO),
-    BACKUP_REDO("backup_redo", QuickSection.BACKUP, R.string.action_backup_redo, R.string.action_backup_redo_text, QuickButtons.TO),
-    RESTORE_ALL("restore_all", QuickSection.RESTORE, R.string.action_restore_all, R.string.action_restore_all_text, QuickButtons.FROM, root = true),
-    RESTORE_MISSING("restore_missing", QuickSection.RESTORE, R.string.action_restore_missing, R.string.action_restore_missing_text, QuickButtons.FROM, root = true),
-    RESTORE_NEWER("restore_newer", QuickSection.RESTORE, R.string.action_restore_newer, R.string.action_restore_newer_text, QuickButtons.FROM, root = true),
-    DELETE_MISSING("delete_missing", QuickSection.OTHER, R.string.action_delete_missing, R.string.action_delete_missing_text, QuickButtons.DELETE),
-    TOGGLE("toggle", QuickSection.OTHER, R.string.action_toggle, R.string.action_toggle_text, QuickButtons.NONE, root = true),
+/** The choices of the apps sheet. Each one picks its apps with [QuickTargets]. */
+enum class QuickAction(@param:StringRes val title: Int) {
+    BACKUP_ALL(R.string.action_backup_all),
+    BACKUP_PENDING(R.string.action_backup_pending),
+    BACKUP_UPDATED(R.string.action_backup_updated),
+    BACKUP_REDO(R.string.action_backup_redo),
+    RESTORE_ALL(R.string.action_restore_all),
+    RESTORE_MISSING(R.string.action_restore_missing),
+    RESTORE_NEWER(R.string.action_restore_newer),
+    DELETE_MISSING(R.string.action_delete_missing),
 }
 
 /**

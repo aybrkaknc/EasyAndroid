@@ -40,7 +40,6 @@ const val REPO = "https://github.com/aybrkaknc/EasyAndroid"
 
 enum class SettingsPage(@param:StringRes val title: Int) {
     LANGUAGE(R.string.language),
-    APP_BACKUPS(R.string.content_app_backups),
     STORAGE(R.string.storage_space),
     REPORTS(R.string.advanced_reports),
 }
@@ -49,7 +48,6 @@ enum class SettingsPage(@param:StringRes val title: Int) {
 fun SettingsPageContent(page: SettingsPage, model: MainViewModel) {
     when (page) {
         SettingsPage.LANGUAGE -> LanguagePage()
-        SettingsPage.APP_BACKUPS -> AppBackupsPage()
         SettingsPage.STORAGE -> StoragePage(model)
         SettingsPage.REPORTS -> ReportsScreen()
     }
@@ -137,42 +135,6 @@ private fun LanguagePage() {
     }
 }
 
-// ---- app backup defaults
-
-@Composable
-private fun AppBackupsPage() {
-    val settings by Env.prefs.state.collectAsStateWithLifecycle()
-    val options = settings.backup
-    Column(Modifier.verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
-        CardGroup(
-            3,
-        ) { index, shape ->
-            when (index) {
-                0 -> SettingCard(
-                    stringResource(R.string.part_data), shape, summary = stringResource(R.string.part_data_hint),
-                    onClick = { Env.prefs.setBackupOptions(options.copy(data = !options.data)) },
-                ) { Switch(options.data, null) }
-                1 -> SettingCard(
-                    stringResource(R.string.part_obb), shape,
-                    onClick = { Env.prefs.setBackupOptions(options.copy(obb = !options.obb)) },
-                ) { Switch(options.obb, null) }
-                else -> SettingCard(
-                    stringResource(R.string.part_external), shape, summary = stringResource(R.string.part_external_hint),
-                    onClick = { Env.prefs.setBackupOptions(options.copy(externalData = !options.externalData)) },
-                ) { Switch(options.externalData, null) }
-            }
-        }
-        SettingsHeader(stringResource(R.string.compression))
-        CardGroup(2) { index, shape ->
-            val zstd = index == 1
-            SettingCard(
-                stringResource(if (zstd) R.string.compression_zstd else R.string.compression_none), shape,
-                summary = stringResource(if (zstd) R.string.compression_zstd_hint else R.string.compression_none_hint),
-                onClick = { Env.prefs.setBackupOptions(options.copy(compress = zstd)) },
-            ) { RadioButton(options.compress == zstd, null) }
-        }
-    }
-}
 
 // ---- storage
 

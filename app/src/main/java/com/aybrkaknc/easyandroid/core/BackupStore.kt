@@ -20,6 +20,9 @@ class StoredBackups(
     val fileSets: List<StoredFileSet> = emptyList(),
 )
 
+/** The newest saved file backup of any of [kinds], if there is one. */
+fun StoredBackups.newestFileSet(vararg kinds: FileSetKind): StoredFileSet? = fileSets.firstOrNull { it.set.kind in kinds }
+
 const val DEFAULT_ROOT = "/storage/emulated/0/EasyAndroid/Backups"
 
 class BackupStore(private val shell: Root, root: String) {

@@ -18,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -37,9 +38,12 @@ fun DiffScreen(items: List<SystemItem>, onBack: () -> Unit, onApply: (List<Syste
     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(stringResource(R.string.system_diff), style = MaterialTheme.typography.titleLarge)
         Hint(stringResource(R.string.system_diff_hint))
-        Row {
-            TextButton({ selected = items.toSet() }) { Text(stringResource(R.string.select_all)) }
-            TextButton({ selected = emptySet() }) { Text(stringResource(R.string.select_none)) }
+        val all = items.toSet()
+        val allSelected = all.isNotEmpty() && selected.containsAll(all)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SelectAllButton(allSelected, selected.any { it in all }, stringResource(if (allSelected) R.string.select_none else R.string.select_all)) {
+                selected = if (allSelected) emptySet() else all
+            }
         }
         if (items.isEmpty()) Hint(stringResource(R.string.system_no_diff))
         LazyColumn(Modifier.weight(1f)) {

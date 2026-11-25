@@ -32,6 +32,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -56,6 +57,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -76,7 +80,6 @@ object Category {
     val CALLS = Color(0xFFFF6B60)
     val FOLDERS = Color(0xFFE0409E)
     val WALLPAPERS = Color(0xFFFF9F55)
-    val WIFI = Color(0xFF7C5CFF)
 }
 
 @Composable
@@ -173,11 +176,14 @@ fun SelectRow(
     checked: Boolean,
     enabled: Boolean = true,
     detailColor: Color = MaterialTheme.colorScheme.primary,
+    /** Colors the whole row, e.g. by a level. */
+    tint: Color? = null,
     onClick: (() -> Unit)? = null,
     onToggle: () -> Unit,
 ) {
     Row(
-        Modifier.fillMaxWidth().clickable(enabled = enabled || onClick != null) { (onClick ?: onToggle)() }
+        Modifier.fillMaxWidth().then(if (tint != null) Modifier.background(tint.copy(alpha = 0.16f)) else Modifier)
+            .clickable(enabled = enabled || onClick != null) { (onClick ?: onToggle)() }
             .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -259,9 +265,11 @@ fun SettingRow(
     onClick: (() -> Unit)? = null,
     icon: Painter? = null,
     iconTint: Color = MaterialTheme.colorScheme.primary,
+    summaryColor: Color? = null,
+    titleColor: Color? = null,
     trailing: (@Composable () -> Unit)? = null,
 ) {
-    val tint = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+    val tint = if (enabled) titleColor ?: MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
     Row(
         Modifier.fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable(enabled = enabled, onClick = onClick) else Modifier)
@@ -279,7 +287,7 @@ fun SettingRow(
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyLarge, color = tint)
             if (summary != null) {
-                Text(summary, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(summary, style = MaterialTheme.typography.bodyMedium, color = summaryColor ?: MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         if (trailing != null) {
@@ -317,6 +325,21 @@ fun ConfirmDialog(
         confirmButton = { TextButton(onConfirm, enabled = enabled) { Text(confirm) } },
         dismissButton = { TextButton(onNegative) { Text(dismiss) } },
     )
+}
+
+/** A box that is checked when everything is selected and half filled when some of it is. */
+@Composable
+fun SelectAllButton(all: Boolean, some: Boolean, description: String, onClick: () -> Unit) {
+    IconButton(onClick, Modifier.semantics { contentDescription = description }) {
+        TriStateCheckbox(
+            state = when {
+                all -> ToggleableState.On
+                some -> ToggleableState.Indeterminate
+                else -> ToggleableState.Off
+            },
+            onClick = null,
+        )
+    }
 }
 
 fun <T> Set<T>.toggle(item: T): Set<T> = if (item in this) this - item else this + item

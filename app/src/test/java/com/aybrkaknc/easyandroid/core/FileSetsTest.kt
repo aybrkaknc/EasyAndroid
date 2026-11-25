@@ -2,6 +2,7 @@ package com.aybrkaknc.easyandroid.core
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -98,5 +99,21 @@ class FileSetsTest {
         failsWith(ErrorCode.NOT_FOUND) { engine.backup(FileSetKind.MEDIA, listOf("DCIM"), DeviceSnapshot(), task) }
         failsWith(ErrorCode.NOT_FOUND) { engine.backup(FileSetKind.CALLS, emptyList(), DeviceSnapshot(), task) }
         failsWith(ErrorCode.NOT_FOUND) { engine.backup(FileSetKind.MEDIA, listOf("Android"), DeviceSnapshot(), task) }
+    }
+
+    @Test
+    fun findsTheNewestFileBackupOfAKind() {
+        fun block(id: String, kind: String, parent: String, name: String, at: String) =
+            "@@EA F $id\n" + set(kind, parent, name).replace("2026-01-01T00:00:00+03:00", at) + "\n\n"
+        val db = "/data/data/com.android.providers.contacts/databases"
+        val out = block("calls_old", "calls", db, "calllog.db", "2026-01-01T00:00:00+03:00") +
+            block("calls_new", "calls", db, "calllog.db", "2026-03-01T00:00:00+03:00") +
+            block("folders_x", "folders", "/storage/emulated/0", "Download", "2026-02-01T00:00:00+03:00") +
+            block("media_y", "media", "/storage/emulated/0", "DCIM", "2026-04-01T00:00:00+03:00")
+        val list = BackupStore(FakeRoot("cd " to RootResult(0, out)), DEFAULT_ROOT).list()
+        assertEquals("calls_new", list.newestFileSet(FileSetKind.CALLS)?.id)
+        assertEquals("media_y", list.newestFileSet(FileSetKind.FOLDERS, FileSetKind.MEDIA)?.id)
+        assertEquals("folders_x", list.newestFileSet(FileSetKind.FOLDERS)?.id)
+        assertNull(list.newestFileSet(FileSetKind.WALLPAPER))
     }
 }

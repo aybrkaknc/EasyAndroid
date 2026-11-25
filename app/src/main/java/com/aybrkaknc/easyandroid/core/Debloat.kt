@@ -79,7 +79,13 @@ class Debloat(private val shell: Root, private val database: Map<String, Debloat
         if (entry.action.removes && isProtected(entry.packageName)) {
             throw AppException(ErrorCode.PROTECTED, entry.packageName)
         }
-        val result = shell.run(entry.action.command(entry.packageName))
+        // Nothing is left behind: the data goes before the package does. A failure stops here.
+        if (entry.action.removes) execute("pm clear --user 0 ${entry.packageName}")
+        execute(entry.action.command(entry.packageName))
+    }
+
+    private fun execute(command: String) {
+        val result = shell.run(command)
         val text = (result.out + "\n" + result.err).trim()
         val failed = listOf("failure", "exception", "error:").any { it in text.lowercase() }
         if (!result.ok || failed) throw AppException(ErrorCode.COMMAND_FAILED, text)

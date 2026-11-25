@@ -7,15 +7,25 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -31,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -104,12 +115,17 @@ fun BackupsScreen(model: MainViewModel, request: BackupsRequest?, onRequestHandl
             else -> segment = BackupsSegment.APPS
         }
     }
+    // The row follows the segment, so a chip opened from another screen is never out of sight.
+    val chips = rememberLazyListState()
+    val peek = with(LocalDensity.current) { 64.dp.roundToPx() }
+    LaunchedEffect(segment) { chips.animateScrollToItem(segment.ordinal, -peek) }
     Column(Modifier.fillMaxSize()) {
-        Row(
-            Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 4.dp),
+        LazyRow(
+            state = chips,
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            BackupsSegment.entries.forEach { FilterChip(segment == it, { segment = it }, { Text(it.title()) }) }
+            items(BackupsSegment.entries) { FilterChip(segment == it, { segment = it }, { Text(it.title()) }) }
         }
         Box(Modifier.weight(1f)) {
             when (segment) {
@@ -129,6 +145,8 @@ private fun AppBackups(model: MainViewModel, request: BackupsRequest?, onRequest
     val stored by model.backups.collectAsStateWithLifecycle()
     val apps by model.apps.collectAsStateWithLifecycle()
     var query by rememberSaveable { mutableStateOf("") }
+    var searching by rememberSaveable { mutableStateOf(false) }
+    var menu by remember { mutableStateOf(false) }
     var selected by rememberSaveable { mutableStateOf(emptySet<String>()) }
     var choosing by remember { mutableStateOf(false) }
     var conflicts by remember { mutableStateOf<Conflicts?>(null) }
@@ -179,14 +197,40 @@ private fun AppBackups(model: MainViewModel, request: BackupsRequest?, onRequest
         startRestore(model, backups, options)
     }
 
+    val visibleIds = visible.map { it.id }.toSet()
+    val allVisible = visibleIds.isNotEmpty() && selected.containsAll(visibleIds)
     Column(Modifier.fillMaxSize()) {
-        SearchField(query) { query = it }
+        Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.apps_selected_count, visible.count { it.id in selected }, visible.size),
+                Modifier.weight(1f), style = MaterialTheme.typography.titleSmall,
+            )
+            IconButton({ model.refreshBackups() }) { Icon(Icons.Default.Refresh, stringResource(R.string.refresh)) }
+            IconButton({
+                searching = !searching
+                if (!searching) query = ""
+            }) { Icon(Icons.Default.Search, stringResource(R.string.search)) }
+            SelectAllButton(allVisible, visible.any { it.id in selected }, stringResource(if (allVisible) R.string.select_none else R.string.select_all)) {
+                selected = if (allVisible) selected - visibleIds else selected + visibleIds
+            }
+            Box {
+                IconButton({ menu = true }) { Icon(Icons.Default.MoreVert, stringResource(R.string.more_options)) }
+                DropdownMenu(menu, { menu = false }) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.import_backup)) },
+                        onClick = {
+                            menu = false
+                            import.launch(arrayOf("*/*"))
+                        },
+                    )
+                }
+            }
+        }
+        if (searching) SearchField(query) { query = it }
         Row(
             Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TextButton({ import.launch(arrayOf("*/*")) }) { Text(stringResource(R.string.import_backup)) }
-            TextButton({ model.refreshBackups() }) { Text(stringResource(R.string.refresh)) }
             if (visible.isNotEmpty()) {
                 val newest = visible.distinctBy { it.manifest.packageName }.map { it.id }.toSet()
                 TextButton({ selected = if (selected == newest) emptySet() else newest }) {

@@ -67,13 +67,11 @@ private fun ChipRows(vararg chips: ChipSpec) {
     }
 }
 
-/** What goes into a backup. Media chooses folders of shared storage that are saved after the apps. */
+/** What goes into a backup of apps. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BackupSheet(count: Int, onDismiss: () -> Unit, note: String? = null, onConfirm: (BackupOptions, List<String>) -> Unit) {
+fun BackupSheet(count: Int, onDismiss: () -> Unit, note: String? = null, onConfirm: (BackupOptions) -> Unit) {
     var options by remember { mutableStateOf(Env.prefs.state.value.backup) }
-    var media by remember { mutableStateOf(emptyList<String>()) }
-    var pickingMedia by remember { mutableStateOf(false) }
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.verticalScroll(rememberScrollState()).padding(start = 16.dp, end = 16.dp, bottom = 24.dp)) {
             Text(stringResource(R.string.back_up_count, count), style = MaterialTheme.typography.titleLarge)
@@ -83,25 +81,14 @@ fun BackupSheet(count: Int, onDismiss: () -> Unit, note: String? = null, onConfi
                 ChipSpec(R.string.part_data, options.data) { options = options.copy(data = !options.data) },
                 ChipSpec(R.string.part_external, options.externalData) { options = options.copy(externalData = !options.externalData) },
                 ChipSpec(R.string.part_expansion, options.obb) { options = options.copy(obb = !options.obb) },
-                ChipSpec(R.string.part_media, media.isNotEmpty()) { if (media.isEmpty()) pickingMedia = true else media = emptyList() },
             )
-            if (media.isNotEmpty()) Hint(stringResource(R.string.fileset_folders_count, media.size))
-            if (pickingMedia) {
-                FolderPickerDialog(media.toSet(), onDismiss = { pickingMedia = false }) {
-                    media = it
-                    pickingMedia = false
-                }
-            }
             Text(stringResource(R.string.compression), Modifier.padding(top = 20.dp, bottom = 12.dp), style = MaterialTheme.typography.titleMedium)
             ChipRows(
                 ChipSpec(R.string.compression_none, !options.compress) { options = options.copy(compress = false) },
                 ChipSpec(R.string.compression_zstd, options.compress) { options = options.copy(compress = true) },
             )
-            if (options.data || options.externalData) {
-                Text(stringResource(R.string.force_stop_warning), Modifier.padding(top = 16.dp), color = MaterialTheme.colorScheme.error)
-                if (note != null) Text(note, color = MaterialTheme.colorScheme.error)
-            }
-            Button({ onConfirm(options, media) },Modifier.fillMaxWidth().padding(top = 20.dp).heightIn(min = 56.dp)) {
+            if (note != null) Text(note, Modifier.padding(top = 16.dp), color = MaterialTheme.colorScheme.error)
+            Button({ onConfirm(options) }, Modifier.fillMaxWidth().padding(top = 20.dp).heightIn(min = 56.dp)) {
                 Text(stringResource(R.string.sheet_backup), style = MaterialTheme.typography.titleMedium)
             }
         }

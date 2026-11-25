@@ -2,14 +2,10 @@ package com.aybrkaknc.easyandroid.ui
 
 import android.os.Environment
 import android.os.StatFs
-import androidx.annotation.StringRes
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,7 +15,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Call
@@ -34,9 +29,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,31 +39,28 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.aybrkaknc.easyandroid.Env
 import com.aybrkaknc.easyandroid.MainViewModel
 import com.aybrkaknc.easyandroid.R
 import com.aybrkaknc.easyandroid.RootState
-import kotlin.math.roundToInt
-import kotlinx.coroutines.launch
+import com.aybrkaknc.easyandroid.core.FileSetKind
+import com.aybrkaknc.easyandroid.core.StoredFileSet
+import com.aybrkaknc.easyandroid.core.parseTimestamp
+import java.time.Instant
 
-private val Granted = Color(0xFF2EB67D)
+val Granted = Color(0xFF2EB67D)
 
-/** Overview of the phone and the quick actions, grouped like the things they back up. */
+/** Overview of the phone, then one line for each kind of backup that opens everything that can be done with it. */
 @Composable
 fun HomeScreen(
     model: MainViewModel,
-    ready: Boolean,
     scroll: ScrollState,
     onAction: (QuickAction) -> Unit,
-    onMore: () -> Unit,
     onEasyAdb: () -> Unit,
     onSystem: () -> Unit,
     onSystemRestore: () -> Unit,
@@ -77,12 +69,11 @@ fun HomeScreen(
     onSegment: (BackupsSegment) -> Unit,
 ) {
     val root by model.root.collectAsStateWithLifecycle()
-    val settings by Env.prefs.state.collectAsStateWithLifecycle()
     val granted = root == RootState.GRANTED
-    val scope = rememberCoroutineScope()
-    var appsY by remember { mutableIntStateOf(0) }
-    var systemY by remember { mutableIntStateOf(0) }
-    val android = painterResource(R.drawable.ic_android)
+    var sheet by rememberSaveable { mutableStateOf<QuickKind?>(null) }
+    var backing by remember { mutableStateOf<FileSetKind?>(null) }
+    var picking by remember { mutableStateOf(false) }
+    var restoring by remember { mutableStateOf<StoredFileSet?>(null) }
 
     Column(Modifier.fillMaxSize().verticalScroll(scroll).padding(start = 12.dp, end = 12.dp, bottom = 32.dp)) {
         Row(Modifier.fillMaxWidth().padding(start = 12.dp, top = 8.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -96,74 +87,46 @@ fun HomeScreen(
             Storage(onStorage)
             Line()
             RootStatus(model, root)
-            Line()
             if (granted) {
-                CapsLabel(stringResource(R.string.home_wireless), Modifier.padding(start = 16.dp, top = 12.dp))
-                WirelessControls(model)
                 Line()
-            }
-            Chips(
-                onApps = { scope.launch { scroll.animateScrollTo(appsY) } },
-                onSystemSection = { scope.launch { scroll.animateScrollTo(systemY) } },
-                onWifi = { if (granted) onSystem() },
-                onSegment = onSegment,
-            )
-        }
-
-        Column(Modifier.onGloballyPositioned { appsY = it.positionInParent().y.roundToInt() }) {
-            SectionLabel(android, stringResource(R.string.section_apps))
-            val pinned = QuickAction.entries.filter { it.id in settings.pinned }
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                pinned.forEachIndexed { index, action ->
-                    QuickActionCard(action, groupShape(index, pinned.size + 1), ready, null, onAction, onEasyAdb)
-                }
-                Row(
-                    Modifier.fillMaxWidth().clip(groupShape(pinned.size, pinned.size + 1))
-                        .background(cardColor()).clickable(onClick = onMore).padding(20.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        stringResource(R.string.more_actions), Modifier.weight(1f),
-                        style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary,
-                    )
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = MaterialTheme.colorScheme.primary)
-                }
+                WirelessCard(model)
             }
         }
 
-        Column(Modifier.onGloballyPositioned { systemY = it.positionInParent().y.roundToInt() }) {
-            SectionLabel(rememberVectorPainter(Icons.Default.Build), stringResource(R.string.section_system))
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                QuickCard(
-                    stringResource(R.string.action_system_backup), stringResource(R.string.action_system_backup_text),
-                    groupShape(0, 2), enabled = granted, onClick = onSystem,
-                )
-                QuickCard(
-                    stringResource(R.string.action_system_restore), stringResource(R.string.action_system_restore_text),
-                    groupShape(1, 2), enabled = granted, root = true,
-                    buttons = listOf(CardButton(R.string.from_device, onSystemRestore), CardButton(R.string.with_easyadb, onEasyAdb)),
-                )
+        BackupList(model, granted) { sheet = it }
+    }
+
+    sheet?.let { kind ->
+        QuickSheet(kind, model, granted, onDismiss = { sheet = null }) { event ->
+            when (event) {
+                is QuickEvent.Action -> onAction(event.action)
+                is QuickEvent.Show -> onSegment(event.segment)
+                is QuickEvent.Backup -> backing = event.kind
+                is QuickEvent.Restore -> restoring = event.set
+                QuickEvent.Pick -> picking = true
+                QuickEvent.BackupSystem -> onSystem()
+                QuickEvent.ShowSystem -> onSystemRestore()
+                QuickEvent.EasyAdb -> onEasyAdb()
             }
         }
-
-        FileSection(
-            painterResource(R.drawable.ic_message), R.string.section_messages,
-            R.string.action_messages_backup, R.string.action_messages_backup_text,
-            R.string.action_messages_restore, R.string.action_messages_restore_text,
-            granted, { onSegment(BackupsSegment.MESSAGES) }, onEasyAdb,
-        )
-        FileSection(
-            rememberVectorPainter(Icons.Default.Call), R.string.section_calls,
-            R.string.action_calls_backup, R.string.action_calls_backup_text,
-            R.string.action_calls_restore, R.string.action_calls_restore_text,
-            granted, { onSegment(BackupsSegment.CALLS) }, onEasyAdb,
-        )
-        FileSection(
-            painterResource(R.drawable.ic_folder), R.string.section_folders,
-            R.string.action_folders_backup, R.string.action_folders_backup_text,
-            R.string.action_folders_restore, R.string.action_folders_restore_text,
-            granted, { onSegment(BackupsSegment.FOLDERS) }, onEasyAdb,
-        )
+    }
+    backing?.let { kind ->
+        FileSetBackupDialog(kind, onDismiss = { backing = null }) {
+            backing = null
+            startFileBackup(model, kind, emptyList())
+        }
+    }
+    if (picking) {
+        FolderPickerDialog(emptySet(), onDismiss = { picking = false }) { names ->
+            picking = false
+            startFileBackup(model, FileSetKind.FOLDERS, names)
+        }
+    }
+    restoring?.let { item ->
+        FileSetRestoreDialog(item, onDismiss = { restoring = null }) {
+            restoring = null
+            startFileRestore(model, item)
+        }
     }
 }
 
@@ -206,7 +169,6 @@ private fun Storage(onClick: () -> Unit) {
 
 @Composable
 private fun RootStatus(model: MainViewModel, root: RootState) {
-    val version by model.rootVersion.collectAsStateWithLifecycle()
     Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             CapsLabel(stringResource(R.string.home_root))
@@ -226,7 +188,6 @@ private fun RootStatus(model: MainViewModel, root: RootState) {
                 },
             )
             if (root == RootState.MISSING) Hint(stringResource(R.string.no_root_text))
-            version?.let { if (root == RootState.GRANTED) Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         }
         when (root) {
             RootState.GRANTED -> Box(
@@ -239,42 +200,45 @@ private fun RootStatus(model: MainViewModel, root: RootState) {
     }
 }
 
-@Composable
-private fun Chips(onApps: () -> Unit, onSystemSection: () -> Unit, onWifi: () -> Unit, onSegment: (BackupsSegment) -> Unit) {
-    FlowRow(
-        Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        CategoryChip(painterResource(R.drawable.ic_android), stringResource(R.string.chip_apps), Category.BACKUP, onClick = onApps)
-        CategoryChip(painterResource(R.drawable.ic_message), stringResource(R.string.chip_messages), Category.MESSAGES) { onSegment(BackupsSegment.MESSAGES) }
-        CategoryChip(rememberVectorPainter(Icons.Default.Call), stringResource(R.string.chip_calls), Category.CALLS) { onSegment(BackupsSegment.CALLS) }
-        CategoryChip(painterResource(R.drawable.ic_folder), stringResource(R.string.chip_folders), Category.FOLDERS) { onSegment(BackupsSegment.FOLDERS) }
-        CategoryChip(painterResource(R.drawable.ic_wallpaper), stringResource(R.string.chip_wallpapers), Category.WALLPAPERS) { onSegment(BackupsSegment.WALLPAPERS) }
-        CategoryChip(painterResource(R.drawable.ic_wifi), stringResource(R.string.chip_wifi), Category.WIFI, onClick = onWifi)
-        CategoryChip(rememberVectorPainter(Icons.Default.Build), stringResource(R.string.tab_system), Category.SYSTEM, onClick = onSystemSection)
-    }
-}
+private class BackupEntry(val kind: QuickKind, val icon: Painter, val tint: Color, val times: List<Instant>)
 
-/** A section of files that are backed up from their own segment of the Backups tab, which both cards open. */
+/** One line for each kind of backup: how many there are and how long ago the last one was made. */
 @Composable
-private fun FileSection(
-    icon: Painter,
-    @StringRes title: Int,
-    @StringRes backup: Int,
-    @StringRes backupText: Int,
-    @StringRes restore: Int,
-    @StringRes restoreText: Int,
-    enabled: Boolean,
-    onOpen: () -> Unit,
-    onEasyAdb: () -> Unit,
-) {
-    SectionLabel(icon, stringResource(title))
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        QuickCard(stringResource(backup), stringResource(backupText), groupShape(0, 2), enabled = enabled, onClick = onOpen)
-        QuickCard(
-            stringResource(restore), stringResource(restoreText), groupShape(1, 2), enabled = enabled, root = true,
-            buttons = listOf(CardButton(R.string.from_device, onOpen), CardButton(R.string.with_easyadb, onEasyAdb)),
-        )
+private fun BackupList(model: MainViewModel, enabled: Boolean, onOpen: (QuickKind) -> Unit) {
+    val stored by model.backups.collectAsStateWithLifecycle()
+    val resources = LocalContext.current.resources
+    val formatter = rememberRelativeFormatter()
+    val now = remember(stored) { Instant.now() }
+    val list = stored
+
+    fun files(vararg kinds: FileSetKind) = list?.fileSets.orEmpty().filter { it.set.kind in kinds }
+        .mapNotNull { parseTimestamp(it.set.createdAt)?.toInstant() }
+    val entries = listOf(
+        BackupEntry(
+            QuickKind.APPS, painterResource(R.drawable.ic_android), Category.BACKUP,
+            list?.backups.orEmpty().mapNotNull { parseTimestamp(it.manifest.createdAt)?.toInstant() },
+        ),
+        BackupEntry(QuickKind.MESSAGES, painterResource(R.drawable.ic_message), Category.MESSAGES, files(FileSetKind.MESSAGES)),
+        BackupEntry(QuickKind.CALLS, rememberVectorPainter(Icons.Default.Call), Category.CALLS, files(FileSetKind.CALLS)),
+        BackupEntry(QuickKind.FOLDERS, painterResource(R.drawable.ic_folder), Category.FOLDERS, files(FileSetKind.FOLDERS, FileSetKind.MEDIA)),
+        BackupEntry(QuickKind.WALLPAPERS, painterResource(R.drawable.ic_wallpaper), Category.WALLPAPERS, files(FileSetKind.WALLPAPER)),
+        BackupEntry(QuickKind.SYSTEM, rememberVectorPainter(Icons.Default.Build), Category.SYSTEM, list?.systemSnapshots.orEmpty().mapNotNull(::systemBackupTime)),
+    )
+
+    CapsLabel(stringResource(R.string.home_backups), Modifier.padding(start = 12.dp, top = 24.dp, bottom = 12.dp))
+    CardGroup(entries.size, horizontal = 0.dp) { index, shape ->
+        val entry = entries[index]
+        val last = entry.times.maxOrNull()
+        SettingCard(
+            stringResource(entry.kind.title), shape,
+            summary = when {
+                list == null -> null
+                last == null -> stringResource(R.string.home_backups_none)
+                else -> resources.getQuantityString(R.plurals.home_backups_line, entry.times.size, entry.times.size, formatter.since(last, now))
+            },
+            icon = entry.icon, tint = entry.tint, enabled = enabled,
+            summaryColor = if (last != null && isStale(last, now)) Amber else null,
+            onClick = { onOpen(entry.kind) },
+        ) { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null) }
     }
 }

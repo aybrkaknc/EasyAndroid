@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -38,7 +37,6 @@ import com.aybrkaknc.easyandroid.Env
 import com.aybrkaknc.easyandroid.MainViewModel
 import com.aybrkaknc.easyandroid.R
 import com.aybrkaknc.easyandroid.core.BackupOptions
-import com.aybrkaknc.easyandroid.core.FileSetKind
 import com.aybrkaknc.easyandroid.core.Sh
 import com.aybrkaknc.easyandroid.core.parseTimestamp
 import com.aybrkaknc.easyandroid.job.Jobs
@@ -103,13 +101,10 @@ fun AppsScreen(model: MainViewModel, preselected: Set<String> = emptySet()) {
                 if (!searching) query = ""
             }) { Icon(Icons.Default.Search, stringResource(R.string.search)) }
             IconButton({ sorting = true }) { Icon(painterResource(R.drawable.ic_filter), stringResource(R.string.filter_title)) }
-            IconButton({ selected = if (allSelected) selected - names else selected + names }) {
-                Icon(
-                    Icons.Default.Check,
-                    stringResource(if (allSelected) R.string.select_none else R.string.select_all),
-                    tint = if (allSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            SelectAllButton(
+                allSelected, names.any { it in selected },
+                stringResource(if (allSelected) R.string.select_none else R.string.select_all),
+            ) { selected = if (allSelected) selected - names else selected + names }
         }
         if (searching) SearchField(query) { query = it }
         Row(
@@ -153,11 +148,11 @@ fun AppsScreen(model: MainViewModel, preselected: Set<String> = emptySet()) {
             selected.size,
             onDismiss = { asking = false },
             note = if (system > 0) stringResource(R.string.quick_system_note, system) else null,
-        ) { options, media ->
+        ) { options ->
             asking = false
             val chosen = all.filter { it.packageName in selected }
             selected = emptySet()
-            startBackup(model, chosen, options, media)
+            startBackup(model, chosen, options)
         }
     }
     if (sorting) {
@@ -169,30 +164,10 @@ fun AppsScreen(model: MainViewModel, preselected: Set<String> = emptySet()) {
     }
 }
 
-private sealed interface BackupItem {
-    data class App(val app: AppInfo) : BackupItem
-    data class Media(val folders: List<String>) : BackupItem
-}
-
-/** Backs up [apps] one after the other, then the shared storage [mediaFolders] if there are any. */
-fun startBackup(model: MainViewModel, apps: List<AppInfo>, options: BackupOptions, mediaFolders: List<String> = emptyList()) {
+fun startBackup(model: MainViewModel, apps: List<AppInfo>, options: BackupOptions) {
     val engine = Env.backups()
-    val files = Env.files()
     val device by lazy { engine.snapshot() }
-    val items = apps.map { BackupItem.App(it) } + listOfNotNull(mediaFolders.takeIf { it.isNotEmpty() }?.let { BackupItem.Media(it) })
-    val name = { item: BackupItem ->
-        when (item) {
-            is BackupItem.App -> item.app.label
-            is BackupItem.Media -> Env.app.getString(R.string.kind_media)
-        }
-    }
-    Jobs.start(Env.app, R.string.job_backup, items, name, after = { model.refreshBackups() }) { item, task ->
-        when (item) {
-            is BackupItem.App -> engine.backup(item.app.packageName, item.app.label, options, device, task).notes.map(::noteText)
-            is BackupItem.Media -> {
-                files.backup(FileSetKind.MEDIA, item.folders, device, task)
-                emptyList()
-            }
-        }
+    Jobs.start(Env.app, R.string.job_backup, apps, { it.label }, after = { model.refreshBackups() }) { app, task ->
+        engine.backup(app.packageName, app.label, options, device, task).notes.map(::noteText)
     }
 }

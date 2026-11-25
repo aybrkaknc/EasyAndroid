@@ -13,7 +13,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -32,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -53,7 +51,7 @@ import com.aybrkaknc.easyandroid.job.UiText
 private val Blue = Color(0xFF2E9CF5)
 private val Teal = Color(0xFF2EC4B6)
 private val Green = Color(0xFF3DDC84)
-private val Amber = Color(0xFFF5A623)
+val Amber = Color(0xFFF5A623)
 
 @StringRes
 private fun ThemeMode.title(): Int = when (this) {
@@ -65,7 +63,7 @@ private fun ThemeMode.title(): Int = when (this) {
 
 /** Settings in groups, like the app they follow: each row opens a page, a dialog or another app. */
 @Composable
-fun SettingsScreen(model: MainViewModel, onPage: (SettingsPage) -> Unit, onSystemBackup: () -> Unit, onSegment: (BackupsSegment) -> Unit) {
+fun SettingsScreen(model: MainViewModel, onPage: (SettingsPage) -> Unit) {
     val context = LocalContext.current
     val settings by Env.prefs.state.collectAsStateWithLifecycle()
     val root by model.root.collectAsStateWithLifecycle()
@@ -110,31 +108,6 @@ fun SettingsScreen(model: MainViewModel, onPage: (SettingsPage) -> Unit, onSyste
                 SettingCard(
                     stringResource(R.string.language), shape, summary = languageName(appLanguage(context)),
                     icon = painterResource(R.drawable.ic_language), tint = Teal, onClick = { onPage(SettingsPage.LANGUAGE) },
-                )
-            }
-        }
-
-        SettingsHeader(stringResource(R.string.settings_group_content))
-        CardGroup(4) { index, shape ->
-            when (index) {
-                0 -> SettingCard(
-                    stringResource(R.string.content_app_backups), shape, summary = stringResource(R.string.content_app_backups_text),
-                    icon = painterResource(R.drawable.ic_android), tint = Category.BACKUP, onClick = { onPage(SettingsPage.APP_BACKUPS) },
-                )
-                1 -> SettingCard(
-                    stringResource(R.string.content_system_backups), shape, summary = stringResource(R.string.content_system_backups_text),
-                    icon = rememberVectorPainter(Icons.Default.Build), tint = Category.SYSTEM,
-                    enabled = root == RootState.GRANTED, onClick = onSystemBackup,
-                )
-                2 -> SettingCard(
-                    stringResource(R.string.content_messages), shape, summary = stringResource(R.string.content_messages_text),
-                    icon = painterResource(R.drawable.ic_message), tint = Category.MESSAGES,
-                    enabled = root == RootState.GRANTED, onClick = { onSegment(BackupsSegment.MESSAGES) },
-                )
-                else -> SettingCard(
-                    stringResource(R.string.content_calls), shape, summary = stringResource(R.string.content_calls_text),
-                    icon = rememberVectorPainter(Icons.Default.Call), tint = Category.CALLS,
-                    enabled = root == RootState.GRANTED, onClick = { onSegment(BackupsSegment.CALLS) },
                 )
             }
         }

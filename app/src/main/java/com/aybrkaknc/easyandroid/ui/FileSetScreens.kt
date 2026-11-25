@@ -79,6 +79,7 @@ private fun StoredFileSet.summary(): String {
 fun FileSetBackups(model: MainViewModel, kinds: List<FileSetKind>) {
     val stored by model.backups.collectAsStateWithLifecycle()
     var picking by remember { mutableStateOf(false) }
+    var backing by remember { mutableStateOf(false) }
     var restoring by remember { mutableStateOf<StoredFileSet?>(null) }
     var deleting by remember { mutableStateOf<StoredFileSet?>(null) }
     val list = stored ?: return Loading()
@@ -103,7 +104,7 @@ fun FileSetBackups(model: MainViewModel, kinds: List<FileSetKind>) {
             }
         }
         Button(
-            { if (kind.fixed) startFileBackup(model, kind, emptyList()) else picking = true },
+            { if (kind.fixed) backing = true else picking = true },
             Modifier.fillMaxWidth().padding(16.dp),
         ) { Text(stringResource(if (kind.fixed) R.string.fileset_backup else R.string.fileset_pick)) }
     }
@@ -115,27 +116,17 @@ fun FileSetBackups(model: MainViewModel, kinds: List<FileSetKind>) {
         }
     }
 
+    if (backing) {
+        FileSetBackupDialog(kind, onDismiss = { backing = false }) {
+            backing = false
+            startFileBackup(model, kind, emptyList())
+        }
+    }
+
     restoring?.let { item ->
-        val title = item.set.kind.title()
-        ConfirmDialog(
-            title = stringResource(R.string.fileset_restore_title, title),
-            confirm = stringResource(R.string.restore),
-            onConfirm = {
-                restoring = null
-                startFileRestore(model, item)
-            },
-            onDismiss = { restoring = null },
-        ) {
-            Text(
-                stringResource(if (item.set.kind.fixed) R.string.fileset_restore_replace else R.string.fileset_restore_files, title),
-                color = MaterialTheme.colorScheme.error,
-            )
-            when (item.set.kind) {
-                FileSetKind.WALLPAPER -> Hint(stringResource(R.string.fileset_hint_wallpaper))
-                FileSetKind.CALLS, FileSetKind.MESSAGES -> Hint(stringResource(R.string.fileset_hint_database))
-                else -> {}
-            }
-            Hint(item.id)
+        FileSetRestoreDialog(item, onDismiss = { restoring = null }) {
+            restoring = null
+            startFileRestore(model, item)
         }
     }
 
@@ -158,6 +149,39 @@ fun FileSetBackups(model: MainViewModel, kinds: List<FileSetKind>) {
     }
 }
 
+/** Asks before a backup of a fixed kind starts, because a stray tap would make an empty-handed copy. */
+@Composable
+fun FileSetBackupDialog(kind: FileSetKind, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    ConfirmDialog(
+        title = stringResource(R.string.fileset_backup_title, kind.title()),
+        confirm = stringResource(R.string.fileset_backup_confirm),
+        onConfirm = onConfirm,
+        onDismiss = onDismiss,
+    ) { Text(stringResource(R.string.fileset_backup_text)) }
+}
+
+@Composable
+fun FileSetRestoreDialog(item: StoredFileSet, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    val title = item.set.kind.title()
+    ConfirmDialog(
+        title = stringResource(R.string.fileset_restore_title, title),
+        confirm = stringResource(R.string.restore),
+        onConfirm = onConfirm,
+        onDismiss = onDismiss,
+    ) {
+        Text(
+            stringResource(if (item.set.kind.fixed) R.string.fileset_restore_replace else R.string.fileset_restore_files, title),
+            color = MaterialTheme.colorScheme.error,
+        )
+        when (item.set.kind) {
+            FileSetKind.WALLPAPER -> Hint(stringResource(R.string.fileset_hint_wallpaper))
+            FileSetKind.CALLS, FileSetKind.MESSAGES -> Hint(stringResource(R.string.fileset_hint_database))
+            else -> {}
+        }
+        Hint(item.id)
+    }
+}
+
 /** [folders] only matter for media and folder backups. */
 fun startFileBackup(model: MainViewModel, kind: FileSetKind, folders: List<String>) {
     val engine = Env.files()
@@ -167,7 +191,7 @@ fun startFileBackup(model: MainViewModel, kind: FileSetKind, folders: List<Strin
     }
 }
 
-private fun startFileRestore(model: MainViewModel, item: StoredFileSet) {
+fun startFileRestore(model: MainViewModel, item: StoredFileSet) {
     val engine = Env.files()
     Jobs.start(Env.app, R.string.job_restore, listOf(item), { Env.app.getString(titleOf(it.set.kind)) }, after = { model.refreshBackups() }) { stored, task ->
         engine.restore(stored.id, task)

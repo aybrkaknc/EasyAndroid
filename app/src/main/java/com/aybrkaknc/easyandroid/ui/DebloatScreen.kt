@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -40,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -105,6 +107,7 @@ fun DebloatScreen(model: MainViewModel) {
     var info by remember { mutableStateOf<AppInfo?>(null) }
 
     var menu by remember { mutableStateOf(false) }
+    var searching by rememberSaveable { mutableStateOf(false) }
     val save = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         val entries = removedProfile(model.apps.value.orEmpty())
         if (uri != null) model.run { saveProfile(uri, entries) }
@@ -130,7 +133,34 @@ fun DebloatScreen(model: MainViewModel) {
     }
 
     Column(Modifier.fillMaxSize()) {
-        SearchField(query, menu = {
+        val visibleNames = visible.map { it.packageName }.toSet()
+        val allVisible = visibleNames.isNotEmpty() && selected.containsAll(visibleNames)
+        Row(
+            Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            ColorChip(removed, Category.SYSTEM, { removed = !removed; selected = emptySet() }) { Text(stringResource(R.string.show_removed)) }
+            FilterChip(everything, { everything = true }, { Text(stringResource(R.string.all)) })
+            (Removal.entries + null).forEach { item ->
+                ColorChip(!everything && level == item, removalColor(item), { level = item; everything = false }) {
+                    Text(stringResource(removalId(item)))
+                }
+            }
+        }
+        Row(
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(start = 16.dp, end = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(stringResource(R.string.selected_count, chosen.size), style = MaterialTheme.typography.titleSmall)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton({
+                searching = !searching
+                if (!searching) query = ""
+            }) { Icon(Icons.Default.Search, stringResource(R.string.search)) }
+            SelectAllButton(allVisible, visible.any { it.packageName in selected }, stringResource(if (allVisible) R.string.select_none else R.string.select_all)) {
+                selected = if (allVisible) selected - visibleNames else selected + visibleNames
+            }
             Box {
                 IconButton({ menu = true }) { Icon(Icons.Default.MoreVert, stringResource(R.string.more_options)) }
                 DropdownMenu(menu, { menu = false }) {
@@ -150,25 +180,9 @@ fun DebloatScreen(model: MainViewModel) {
                     )
                 }
             }
-        }) { query = it }
-        Row(
-            Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            ColorChip(removed, Category.SYSTEM, { removed = !removed; selected = emptySet() }) { Text(stringResource(R.string.show_removed)) }
-            FilterChip(everything, { everything = true }, { Text(stringResource(R.string.all)) })
-            (Removal.entries + null).forEach { item ->
-                ColorChip(!everything && level == item, removalColor(item), { level = item; everything = false }) {
-                    Text(stringResource(removalId(item)))
-                }
             }
         }
-        if (chosen.isNotEmpty()) {
-            Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.selected_count, chosen.size), Modifier.weight(1f))
-                TextButton({ selected = emptySet() }) { Text(stringResource(R.string.select_none)) }
-            }
-        }
+        if (searching) SearchField(query) { query = it }
         LazyColumn(Modifier.weight(1f)) {
             items(visible, key = { it.packageName }) { app ->
                 val state = when {
@@ -180,10 +194,9 @@ fun DebloatScreen(model: MainViewModel) {
                     packageName = app.packageName,
                     title = app.label,
                     subtitle = app.packageName,
-                    detail = listOf(stringResource(removalId(app.debloat?.removal)), app.debloat?.list.orEmpty(), state)
-                        .filter { it.isNotEmpty() }.joinToString("  "),
+                    detail = state,
                     checked = app.packageName in selected,
-                    detailColor = removalColor(app.debloat?.removal),
+                    tint = removalColor(app.debloat?.removal),
                     enabled = !app.active || !debloat.isProtected(app.packageName),
                     onClick = { info = app },
                 ) { selected = selected.toggle(app.packageName) }
@@ -249,6 +262,9 @@ fun DebloatPlanDialog(entries: List<ProfileEntry>, apps: List<AppInfo>, onDismis
         onConfirm = onConfirm,
         onDismiss = onDismiss,
     ) {
+        if (entries.any { it.action.removes }) {
+            Text(stringResource(R.string.clear_warning), color = MaterialTheme.colorScheme.error)
+        }
         val uninstalls = entries.filter { it.action == DebloatAction.UNINSTALL }.map { it.packageName }.toSet()
         if (uninstalls.isNotEmpty()) {
             Text(stringResource(R.string.uninstall_warning), color = MaterialTheme.colorScheme.error)

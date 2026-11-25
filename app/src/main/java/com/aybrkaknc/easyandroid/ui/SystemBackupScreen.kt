@@ -11,9 +11,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TriStateCheckbox
@@ -83,7 +85,8 @@ fun SystemBackupScreen(model: MainViewModel, onDone: () -> Unit) {
         }
     }
     var query by rememberSaveable { mutableStateOf("") }
-    var open by remember { mutableStateOf(setOf(Part.ROLES, Part.WIFI)) }
+    var searching by rememberSaveable { mutableStateOf(false) }
+    var open by remember { mutableStateOf(emptySet<Part>()) }
 
     val all = items ?: return Loading()
     // Passwords stay out of a backup unless the user asks for them.
@@ -91,9 +94,26 @@ fun SystemBackupScreen(model: MainViewModel, onDone: () -> Unit) {
     val visible = all.filter {
         query.isBlank() || it.title().contains(query, true) || it.summary().contains(query, true)
     }
+    // Wi-Fi networks are never part of select all, for the same reason they are not selected by default.
+    val selectable = all.filter { it.part() != Part.WIFI }
+    val allSelected = selectable.isNotEmpty() && selected.containsAll(selectable)
 
     Column(Modifier.fillMaxSize()) {
-        SearchField(query) { query = it }
+        Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.apps_selected_count, selectable.count { it in selected }, selectable.size),
+                Modifier.weight(1f), style = MaterialTheme.typography.titleSmall,
+            )
+            IconButton({
+                searching = !searching
+                if (!searching) query = ""
+            }) { Icon(Icons.Default.Search, stringResource(R.string.search)) }
+            SelectAllButton(
+                allSelected, selectable.any { it in selected },
+                stringResource(if (allSelected) R.string.select_none else R.string.select_all),
+            ) { selected = if (allSelected) selected - selectable.toSet() else selected + selectable }
+        }
+        if (searching) SearchField(query) { query = it }
         LazyColumn(Modifier.weight(1f)) {
             Part.entries.forEach { part ->
                 val total = all.filter { it.part() == part }

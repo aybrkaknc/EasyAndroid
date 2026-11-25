@@ -284,6 +284,21 @@ class CoreTest {
     }
 
     @Test
+    fun debloatClearsDataBeforeRemovingAndStopsOnFailure() {
+        val root = FakeRoot()
+        Debloat(root, emptyMap(), "com.own").apply(ProfileEntry("com.a", DebloatAction.DISABLE))
+        assertEquals(listOf("pm clear --user 0 com.a", "pm disable-user --user 0 com.a"), root.calls)
+
+        val failing = FakeRoot("pm clear" to RootResult(1, "Failure"))
+        failsWith(ErrorCode.COMMAND_FAILED) { Debloat(failing, emptyMap(), "com.own").apply(ProfileEntry("com.a", DebloatAction.UNINSTALL)) }
+        assertEquals(listOf("pm clear --user 0 com.a"), failing.calls)
+
+        val enabling = FakeRoot()
+        Debloat(enabling, emptyMap(), "com.own").apply(ProfileEntry("com.a", DebloatAction.ENABLE))
+        assertEquals(listOf("pm enable --user 0 com.a"), enabling.calls)
+    }
+
+    @Test
     fun debloatProtectsUnsafePackages() {
         val root = FakeRoot()
         val unsafe = database.entries.first { it.value.removal == Removal.UNSAFE && Sh.isPackage(it.key) }.key

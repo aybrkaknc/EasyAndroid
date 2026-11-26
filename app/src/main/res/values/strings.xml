@@ -363,4 +363,9 @@
     <string name="pcs_forget">Forget</string>
     <string name="pcs_hint">A trusted PC can start backups of messages, call logs, wallpapers and system settings here without asking.</string>
     <string name="stage_external">Copying external data</string>
+    <string name="cancel_backup_title">Cancel the backup?</string>
+    <string name="cancel_restore_title">Cancel the restore?</string>
+    <string name="cancel_confirm_text">It keeps running until you confirm.</string>
+    <string name="cancel_confirm">Yes, cancel</string>
+    <string name="cancel_keep">Keep going</string>
 </resources>

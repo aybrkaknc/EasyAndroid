@@ -359,4 +359,9 @@
     <string name="pcs_forget">Unut</string>
     <string name="pcs_hint">Güvenilen bilgisayar burada mesaj, arama kaydı, duvar kağıdı ve sistem ayarı yedeğini sormadan başlatabilir.</string>
     <string name="stage_external">Harici veri kopyalanıyor</string>
+    <string name="cancel_backup_title">Yedek iptal edilsin mi?</string>
+    <string name="cancel_restore_title">Geri yükleme iptal edilsin mi?</string>
+    <string name="cancel_confirm_text">Onaylayana kadar sürer.</string>
+    <string name="cancel_confirm">İptal et</string>
+    <string name="cancel_keep">Devam et</string>
 </resources>

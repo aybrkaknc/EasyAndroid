@@ -323,9 +323,34 @@ private fun JobScreen(job: JobState) {
         if (job.finished) {
             Button({ Jobs.dismiss() }, Modifier.fillMaxWidth()) { Text(stringResource(R.string.close)) }
         } else {
-            OutlinedButton({ Jobs.cancel() }, Modifier.fillMaxWidth(), enabled = !job.cancelling) {
+            // A backup or a restore that is cut off does harm, so cancelling one is asked about first.
+            var asking by remember { mutableStateOf(false) }
+            val question = cancelQuestion(job.title)
+            OutlinedButton(
+                { if (question == null) Jobs.cancel() else asking = true },
+                Modifier.fillMaxWidth(), enabled = !job.cancelling,
+            ) {
                 if (job.cancelling) CircularProgressIndicator() else Text(stringResource(R.string.cancel))
+            }
+            if (asking && question != null) {
+                ConfirmDialog(
+                    title = stringResource(question),
+                    confirm = stringResource(R.string.cancel_confirm),
+                    onConfirm = {
+                        asking = false
+                        Jobs.cancel()
+                    },
+                    onDismiss = { asking = false },
+                    dismiss = stringResource(R.string.cancel_keep),
+                ) { Text(stringResource(R.string.cancel_confirm_text)) }
             }
         }
     }
+}
+
+/** What to ask before the job with this title is cancelled; null when it can just stop. */
+private fun cancelQuestion(title: Int): Int? = when (title) {
+    R.string.job_backup, R.string.job_system_backup -> R.string.cancel_backup_title
+    R.string.job_restore, R.string.job_system_restore -> R.string.cancel_restore_title
+    else -> null
 }

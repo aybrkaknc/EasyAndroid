@@ -36,7 +36,7 @@ EasyAndroid backs up, restores and debloats apps on a rooted Android phone, with
 
 ## Back up apps
 
-* **Back up apps** opens the app list with nothing ticked. Tick the apps you want, or use the select-all button to tick every app except the ones the phone cannot do without (System UI, Settings, Shell, EasyAndroid itself and packages the UAD-NG list marks as unsafe). Choose what to include in the dialog: app data, OBB files, `Android/data` and compression. The dialog tells you how many system apps are included. Data is only consistent when an app is closed, so the selected apps are closed while they are backed up.
+* **Back up apps** opens the app list with nothing ticked. Tick the apps you want, or use the select-all button to tick every app except the ones the phone cannot do without (System UI, Settings, Shell, EasyAndroid itself and packages the UAD-NG list marks as unsafe). Choose what to include in the dialog: Data, External data (`Android/data`), OBB and compression. The APK is always included. The dialog tells you how many system apps are included. Data is only consistent when an app is closed, so the selected apps are closed while they are backed up.
 * The **Apps** sheet also has **Back up pending apps**, **updated apps** and **Refresh existing backups**, which pick the apps for you: apps without a backup, apps whose installed version is newer than their backup, and apps that already have a backup.
 * Every file is stored with a SHA-256 checksum and the manifest is written last, so a backup that was cut short is marked as incomplete.
 
@@ -45,7 +45,7 @@ EasyAndroid backs up, restores and debloats apps on a rooted Android phone, with
 Open **Restore** (or tap **Apps** on Home and use the restore choices of its sheet).
 
 * **Restore all apps**, **Restore missing apps** and **Restore new versions** in the **Apps** sheet open Restore with the matching backups already ticked. Press **Restore** to continue.
-* Choose what to restore: the app, its data, OBB files and permissions. If an app is already installed you can overwrite it or skip it, for one app or for all.
+* Choose what to restore: APK, Data and External data, OBB and Permissions. Cancelling a running backup or restore asks for confirmation first. If an app is already installed you can overwrite it or skip it, for one app or for all.
 * Every checksum is verified before anything on the phone changes.
 * Restore your apps first and the system backup after them, because default apps need their packages to exist.
 

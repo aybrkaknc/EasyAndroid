@@ -36,7 +36,7 @@ EasyAndroid, root'lu bir Android telefonda PC olmadan uygulamaları yedekler, ge
 
 ## Uygulamaları yedekle
 
-* **Uygulamaları yedekle** uygulama listesini hiçbiri seçili olmadan açar. İstediğiniz uygulamaları seçin ya da tümünü seçmek için seçme simgesine dokunun; bu, telefonun vazgeçemeyeceği uygulamalar (Sistem UI, Ayarlar, Shell, EasyAndroid'in kendisi ve UAD-NG listesinde güvensiz işaretli paketler) hariç hepsini seçer. Diyalogda uygulama verisi, OBB dosyaları, `Android/data` ve sıkıştırmayı seçersiniz. Diyalog kaç sistem uygulamasının dahil olduğunu söyler. Veri ancak uygulama kapalıyken tutarlıdır, bu yüzden seçili uygulamalar yedeklenirken kapatılır.
+* **Uygulamaları yedekle** uygulama listesini hiçbiri seçili olmadan açar. İstediğiniz uygulamaları seçin ya da tümünü seçmek için seçme simgesine dokunun; bu, telefonun vazgeçemeyeceği uygulamalar (Sistem UI, Ayarlar, Shell, EasyAndroid'in kendisi ve UAD-NG listesinde güvensiz işaretli paketler) hariç hepsini seçer. Diyalogda Veri, Harici veri (`Android/data`), OBB ve sıkıştırmayı seçersiniz. APK her zaman alınır. Diyalog kaç sistem uygulamasının dahil olduğunu söyler. Veri ancak uygulama kapalıyken tutarlıdır, bu yüzden seçili uygulamalar yedeklenirken kapatılır.
 * **Uygulamalar** sayfasındaki **Bekleyen uygulamaları yedekle**, **Güncellenen uygulamaları yedekle** ve **Mevcut yedekleri yenile** uygulamaları sizin yerinize seçer: yedeği olmayanlar, kurulu sürümü yedeğinden yeni olanlar ve zaten yedeği olanlar.
 * Her dosya SHA-256 özetiyle saklanır ve manifest en son yazılır, bu yüzden yarım kalan bir yedek "eksik yedek" olarak işaretlenir.
 
@@ -45,7 +45,7 @@ EasyAndroid, root'lu bir Android telefonda PC olmadan uygulamaları yedekler, ge
 **Geri Yükle** sekmesini açın (veya Ana Sayfa'da **Uygulamalar**'a dokunup sayfasındaki geri yükleme seçeneklerini kullanın).
 
 * **Uygulamalar** sayfasındaki **Tüm uygulamaları geri yükle**, **Eksik uygulamaları geri yükle** ve **Yeni sürümleri geri yükle** Geri Yükle'yi ilgili yedekler işaretli açar. Devam etmek için **Geri yükle**'ye basın.
-* Neyin geri yükleneceğini seçersiniz: uygulama, verisi, OBB dosyaları ve izinler. Uygulama zaten kuruluysa üzerine yazabilir veya atlayabilirsiniz; bir uygulama için ya da hepsi için.
+* Neyin geri yükleneceğini seçersiniz: APK, Veri ve Harici veri, OBB ve İzinler. Süren bir yedek ya da geri yükleme iptal edilmeden önce onay sorulur. Uygulama zaten kuruluysa üzerine yazabilir veya atlayabilirsiniz; bir uygulama için ya da hepsi için.
 * Telefonda bir şey değişmeden önce tüm özetler doğrulanır.
 * Önce uygulamalarınızı, sonra sistem yedeğini geri yükleyin; çünkü varsayılan uygulamalar için paketlerin kurulu olması gerekir.
 

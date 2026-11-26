@@ -83,6 +83,7 @@
     <string name="share_text">EasyAndroid: backup, restore and debloat for rooted Android phones. %1$s</string>
     <string name="no_browser">No app found to open the link</string>
     <string name="reports_empty">No jobs yet.</string>
+    <string name="reports_share_log">Share log</string>
     <string name="reports_clear">Clear</string>
     <string name="reports_clear_title">Clear all reports?</string>
     <string name="reports_clear_text">The list of past jobs will be emptied. Backups are not touched.</string>

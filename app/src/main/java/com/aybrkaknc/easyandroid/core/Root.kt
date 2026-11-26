@@ -75,9 +75,17 @@ object SuRoot : Root {
         if (!available()) throw AppException(ErrorCode.NO_ROOT)
         val out = ArrayList<String>()
         val err = ArrayList<String>()
+        val started = System.currentTimeMillis()
         // The subshell keeps `exit` from closing the shared shell, /dev/null keeps commands off its stdin.
         val result = Shell.cmd("(\n$script\n) </dev/null").to(out, err).exec()
-        return RootResult(result.code, out.joinToString("\n"), err.joinToString("\n"))
+        val root = RootResult(result.code, out.joinToString("\n"), err.joinToString("\n"))
+        // Only failures are written; logging every command would make the file huge.
+        if (root.code != 0) {
+            val took = System.currentTimeMillis() - started
+            val text = script.trim().replace("\n", " ").take(200)
+            AppLog.write("root exit ${root.code} $took ms $text | ${root.err.trim().replace("\n", " ").take(300)}")
+        }
+        return root
     }
 
     override fun open(script: String): RootStream {

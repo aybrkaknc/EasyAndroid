@@ -1,5 +1,7 @@
 package com.aybrkaknc.easyandroid.ui
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,11 +27,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
 import com.aybrkaknc.easyandroid.R
+import com.aybrkaknc.easyandroid.core.AppLog
 import com.aybrkaknc.easyandroid.job.Report
 import com.aybrkaknc.easyandroid.job.ReportLog
 import com.aybrkaknc.easyandroid.job.ResultKind
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
+/** Sends the end of the app log to another app, for finding what went wrong. */
+private fun shareLog(context: Context) {
+    val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, AppLog.tail().ifBlank { "-" })
+    context.startActivity(Intent.createChooser(send, null))
+}
 
 /** The results of the last jobs, newest first. Problems come first inside a report. */
 @Composable
@@ -49,6 +58,7 @@ fun ReportsScreen() {
                 stringResource(R.string.advanced_reports_text), Modifier.weight(1f).padding(start = 4.dp, top = 12.dp),
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            TextButton({ shareLog(context) }) { Text(stringResource(R.string.reports_share_log)) }
             TextButton({ clearing = true }) { Text(stringResource(R.string.reports_clear)) }
         }
         LazyColumn(

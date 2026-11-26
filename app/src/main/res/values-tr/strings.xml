@@ -81,6 +81,7 @@
     <string name="share_text">EasyAndroid: root\'lu Android telefonlar için yedekleme, geri yükleme ve debloat. %1$s</string>
     <string name="no_browser">Bağlantıyı açacak uygulama bulunamadı</string>
     <string name="reports_empty">Henüz işlem yok.</string>
+    <string name="reports_share_log">Günlüğü paylaş</string>
     <string name="reports_clear">Temizle</string>
     <string name="reports_clear_title">Tüm raporlar temizlensin mi?</string>
     <string name="reports_clear_text">Geçmiş işlemlerin listesi boşaltılır. Yedeklere dokunulmaz.</string>

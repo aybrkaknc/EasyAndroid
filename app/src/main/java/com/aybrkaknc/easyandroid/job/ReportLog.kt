@@ -1,6 +1,7 @@
 package com.aybrkaknc.easyandroid.job
 
 import android.content.Context
+import com.aybrkaknc.easyandroid.core.AppLog
 import com.aybrkaknc.easyandroid.core.JSON
 import com.aybrkaknc.easyandroid.core.timestamp
 import kotlinx.serialization.Serializable
@@ -50,6 +51,10 @@ object ReportLog {
             total = job.total,
             items = job.results.map { result -> ReportItem(result.name, result.kind.name, result.lines.map { it.resolve(context) }) },
         )
+        AppLog.write("job ${report.title}: ${report.done} done, ${report.failed} failed of ${report.total}")
+        report.items.filter { it.kind == ResultKind.FAILED.name }.forEach {
+            AppLog.write("  failed ${it.name}: ${it.lines.joinToString(" ")}")
+        }
         synchronized(lock) { runCatching { store(context).add(report) } }
     }
 

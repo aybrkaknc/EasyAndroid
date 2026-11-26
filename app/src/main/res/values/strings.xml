@@ -243,6 +243,8 @@
     <string name="job_system_restore">System restore</string>
     <string name="job_position">%1$d of %2$d: %3$s</string>
     <string name="job_summary">%1$d of %2$d done, %3$d failed</string>
+    <string name="job_summary_cancelled">Cancelled: %1$d of %2$d done, %3$d failed</string>
+    <string name="result_cancelled">Cancelled.</string>
     <string name="result_line">%1$s: %2$s</string>
     <string name="result_ok">done</string>
     <string name="result_warning">done with warnings</string>

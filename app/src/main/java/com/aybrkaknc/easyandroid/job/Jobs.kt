@@ -39,6 +39,8 @@ data class JobState(
     val done: Long = 0,
     val size: Long = 0,
     val cancelling: Boolean = false,
+    /** The job ended because it was cancelled, here or on the PC. */
+    val cancelled: Boolean = false,
     val finished: Boolean = false,
     val results: List<JobResult> = emptyList(),
 )
@@ -70,8 +72,14 @@ object Jobs {
                 .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "EasyAndroid:job")
             lock.acquire(6 * 60 * 60 * 1000L)
             try {
+                fun notTried(from: Int) = items.drop(from).map {
+                    JobResult(name(it), ResultKind.FAILED, listOf(UiText(R.string.not_tried)))
+                }
                 for ((index, item) in items.withIndex()) {
-                    if (cancelled) break
+                    if (cancelled) {
+                        flow.update { it?.copy(cancelled = true, results = it.results + notTried(index)) }
+                        break
+                    }
                     val label = name(item)
                     var stop = false
                     flow.update { it?.copy(index = index, item = label, stage = Stage.PREPARE, done = 0, size = 0) }
@@ -79,16 +87,17 @@ object Jobs {
                         val lines = work(item, task())
                         JobResult(label, if (lines.any { it.id in WARNINGS }) ResultKind.WARNING else ResultKind.OK, lines)
                     } catch (e: Exception) {
-                        if (e is AppException && e.code == ErrorCode.CANCELLED) break
+                        if (e is AppException && e.code == ErrorCode.CANCELLED) {
+                            val here = JobResult(label, ResultKind.FAILED, listOf(UiText(R.string.result_cancelled)))
+                            flow.update { it?.copy(cancelled = true, results = it.results + here + notTried(index + 1)) }
+                            break
+                        }
                         stop = e is AppException && e.code in STOPS
                         JobResult(label, ResultKind.FAILED, listOf(errorText(e)))
                     }
                     flow.update { it?.copy(results = it.results + result) }
                     if (stop) {
-                        val rest = items.drop(index + 1).map {
-                            JobResult(name(it), ResultKind.FAILED, listOf(UiText(R.string.not_tried)))
-                        }
-                        flow.update { it?.copy(results = it.results + rest) }
+                        flow.update { it?.copy(results = it.results + notTried(index + 1)) }
                         break
                     }
                 }

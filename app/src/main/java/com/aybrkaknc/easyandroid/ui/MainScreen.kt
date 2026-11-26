@@ -286,7 +286,7 @@ private fun JobScreen(job: JobState) {
         Text(stringResource(job.title), style = MaterialTheme.typography.titleLarge)
         if (job.finished) {
             val failed = job.results.count { it.kind == ResultKind.FAILED }
-            Text(stringResource(R.string.job_summary, job.results.size - failed, job.total, failed))
+            Text(stringResource(if (job.cancelled) R.string.job_summary_cancelled else R.string.job_summary, job.results.size - failed, job.total, failed))
         } else {
             Text(stringResource(R.string.job_position, job.index + 1, job.total, job.item))
             LinearProgressIndicator(progress = { job.index.toFloat() / job.total }, modifier = Modifier.fillMaxWidth())

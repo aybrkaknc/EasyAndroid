@@ -73,7 +73,10 @@ fun ReportsScreen() {
                     Text(report.title, style = MaterialTheme.typography.titleMedium)
                     Text(formatDate(report.time), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(
-                        stringResource(R.string.job_summary, report.done, report.total, report.failed),
+                        stringResource(
+                            if (report.cancelled) R.string.job_summary_cancelled else R.string.job_summary,
+                            report.done, report.total, report.failed,
+                        ),
                         color = if (report.failed > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                     )
                     if (open == index) {

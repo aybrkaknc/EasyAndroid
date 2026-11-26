@@ -14,7 +14,13 @@ data class ReportItem(val name: String, val kind: String, val lines: List<String
 
 /** What a finished job did. Texts are kept in the language they were shown in. */
 @Serializable
-data class Report(val time: String, val title: String, val total: Int, val items: List<ReportItem>) {
+data class Report(
+    val time: String,
+    val title: String,
+    val total: Int,
+    val items: List<ReportItem>,
+    val cancelled: Boolean = false,
+) {
     val failed get() = items.count { it.kind == ResultKind.FAILED.name }
     val done get() = items.size - failed
 }
@@ -50,8 +56,9 @@ object ReportLog {
             title = context.getString(job.title),
             total = job.total,
             items = job.results.map { result -> ReportItem(result.name, result.kind.name, result.lines.map { it.resolve(context) }) },
+            cancelled = job.cancelled,
         )
-        AppLog.write("job ${report.title}: ${report.done} done, ${report.failed} failed of ${report.total}")
+        AppLog.write("job ${report.title}: ${report.done} done, ${report.failed} failed of ${report.total}" + if (report.cancelled) " (cancelled)" else "")
         report.items.filter { it.kind == ResultKind.FAILED.name }.forEach {
             AppLog.write("  failed ${it.name}: ${it.lines.joinToString(" ")}")
         }

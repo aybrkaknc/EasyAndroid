@@ -65,7 +65,7 @@ class JobService : Service() {
         if (state.finished) {
             val failed = state.results.count { it.kind == ResultKind.FAILED }
             return builder.setAutoCancel(true)
-                .setContentText(getString(R.string.job_summary, state.results.size - failed, state.total, failed)).build()
+                .setContentText(getString(if (state.cancelled) R.string.job_summary_cancelled else R.string.job_summary, state.results.size - failed, state.total, failed)).build()
         }
         return builder.setOngoing(true)
             .setContentText(getString(R.string.job_position, state.index + 1, state.total, state.item))

@@ -33,7 +33,7 @@
     <string name="nothing_to_do">Bu işleme uyan bir şey yok.</string>
     <string name="quick_system_note">Bunların %1$d tanesi sistem uygulaması. Kapatılmaları aramaları, alarmları veya ekranı kısa süre kesebilir.</string>
     <string name="easyadb_title">EasyADB ile bağlan</string>
-    <string name="easyadb_hint">PC\'de EasyADB\'nin Kablosuz sekmesini açıp aşağıdaki adrese bağlanın. PC yeniyse önce eşleştirin.</string>
+    <string name="easyadb_hint">PC\'de EasyADB\'nin Hata ayıklama bağlantısı ekranını açıp aşağıdaki adrese bağlanın. PC yeniyse önce eşleştirin.</string>
 
     <string name="action_backup_all">Uygulamaları yedekle</string>
     <string name="action_backup_all_text">Bu cihazdaki kurulu uygulamaları yedekler</string>

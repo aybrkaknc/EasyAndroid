@@ -75,7 +75,7 @@ Bunlar dosya kopyası olarak, her seferinde ayrı bir yedek halinde saklanır ve
 
 * Genel bakış kartındaki anahtarla **Kablosuz Hata Ayıklama**'yı açın (Android 11 veya üstü). Satırı bağlantı adresini ve bir PC'nin bağlı olup olmadığını gösterir, bağlıysa yeşil olur. Adres, eşleştirme düğmeleri ve fazlası için satıra dokunun. Bir PC bağlıyken kapatmak önce sorar.
 * **QR ile eşleştir** ve **Kodla eşleştir** Android'in ilgili ekranlarını açar, Geliştirici seçeneklerinde aramanız gerekmez.
-* PC'deki EasyADB'de Kablosuz sekmesini açın, eşleştirin ve telefonda görünen adrese bağlanın.
+* PC'deki EasyADB'de Hata ayıklama bağlantısı ekranını açın, eşleştirin ve telefonda görünen adrese bağlanın.
 * Ana Sayfa'daki her sayfanın sonundaki **EasyADB ile bağlan** aynı ayrıntıları açar ve kapalıysa Kablosuz Hata Ayıklama'yı açar.
 
 ## Yedekleri PC'ye taşıma

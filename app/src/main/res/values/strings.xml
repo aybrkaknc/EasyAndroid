@@ -35,7 +35,7 @@
     <string name="nothing_to_do">Nothing matches this action.</string>
     <string name="quick_system_note">%1$d of these are system apps. Closing them can interrupt calls, alarms or the screen for a moment.</string>
     <string name="easyadb_title">Connect with EasyADB</string>
-    <string name="easyadb_hint">In EasyADB on the PC, open the Wireless tab and connect to the address below. Pair first if this PC is new.</string>
+    <string name="easyadb_hint">In EasyADB on the PC, open the Debug connection screen and connect to the address below. Pair first if this PC is new.</string>
 
     <string name="action_backup_all">Back up apps</string>
     <string name="action_backup_all_text">Back up installed apps from this device</string>

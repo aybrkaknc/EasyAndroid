@@ -75,7 +75,7 @@ These are saved as copies of files, one backup for each time, and listed under t
 
 * Turn on **Wireless Debugging** with the switch on the Overview card (Android 11 or newer). Its line shows the connect address and whether a PC is connected, green once one is. Tap the line for the address, the pairing buttons and more. Turning it off while a PC is connected asks first.
 * **Pair with QR** and **Pair with code** open the matching screens of Android, so you do not have to dig through Developer options.
-* In EasyADB on the PC, open the Wireless tab, pair, and connect to the address shown on the phone.
+* In EasyADB on the PC, open the Debug connection screen, pair, and connect to the address shown on the phone.
 * **Connect with EasyADB** at the end of every sheet on Home opens the same details and turns Wireless Debugging on if it was off.
 
 ## Moving backups to a PC

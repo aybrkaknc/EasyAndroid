@@ -174,7 +174,7 @@ fun startBackup(model: MainViewModel, apps: List<AppInfo>, options: BackupOption
     Jobs.start(Env.app, R.string.job_backup, apps, { it.label }, after = { model.refreshBackups() }) { app, task ->
         if (target == Target.PC) {
             val request = PcRequest(
-                id = PcLink.newId(), created = 0, type = "app", packageName = app.packageName,
+                id = PcLink.newId(), created = 0, type = "app", packageName = app.packageName, label = app.label,
                 data = options.data, obb = options.obb, externalData = options.externalData,
                 batch = batch, index = apps.indexOf(app), size = apps.size,
             )

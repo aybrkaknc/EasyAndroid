@@ -93,8 +93,7 @@
     <string name="app_no_backup">No backup on device</string>
     <string name="app_last_backup">Last backup: %1$s</string>
     <string name="sheet_parts">User app parts</string>
-    <string name="part_apk">APKs</string>
-    <string name="part_expansion">Expansion (OBB)</string>
+    <string name="part_apk">APK</string>
     <string name="sheet_backup">BACKUP</string>
     <string name="sheet_apply">APPLY OPTIONS</string>
     <string name="sheet_reset">RESET FILTERS</string>
@@ -148,13 +147,13 @@
     <string name="no_backups">No backups yet.</string>
     <string name="incomplete">Incomplete backup</string>
 
-    <string name="part_app">App (APK)</string>
+    <string name="part_app">APK</string>
     <string name="part_data">Data</string>
     <string name="part_data_hint">Accounts, settings and files inside the app. Caches are left out.</string>
     <string name="part_obb">OBB</string>
     <string name="part_external">External data</string>
     <string name="part_external_hint">Android/data folder. Can be very large.</string>
-    <string name="part_all_data">All data in the backup</string>
+    <string name="part_all_data">Data and External data</string>
     <string name="part_permissions">Permissions</string>
     <string name="part_permissions_hint">Runtime permissions, special access and battery exemption.</string>
     <string name="keystore_hint">Apps that tie their data to this phone (banking, authenticators) may ask you to sign in again.</string>
@@ -252,9 +251,9 @@
     <string name="permissions_restored">%1$s permissions restored</string>
 
     <string name="stage_prepare">Preparing</string>
-    <string name="stage_apk">App</string>
-    <string name="stage_obb">OBB</string>
-    <string name="stage_data">Data</string>
+    <string name="stage_apk">Copying APK</string>
+    <string name="stage_obb">Copying OBB</string>
+    <string name="stage_data">Copying data</string>
     <string name="stage_files">Files</string>
     <string name="kind_media">Media</string>
     <string name="quick_group_backup">BACK UP</string>
@@ -363,4 +362,5 @@
     <string name="pcs_empty">No PC is trusted yet.</string>
     <string name="pcs_forget">Forget</string>
     <string name="pcs_hint">A trusted PC can start backups of messages, call logs, wallpapers and system settings here without asking.</string>
+    <string name="stage_external">Copying external data</string>
 </resources>

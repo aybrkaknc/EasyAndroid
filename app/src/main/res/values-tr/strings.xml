@@ -89,8 +89,7 @@
     <string name="app_no_backup">Cihazda yedek yok</string>
     <string name="app_last_backup">Son yedek: %1$s</string>
     <string name="sheet_parts">Kullanıcı uygulaması parçaları</string>
-    <string name="part_apk">APK\'lar</string>
-    <string name="part_expansion">Genişleme (OBB)</string>
+    <string name="part_apk">APK</string>
     <string name="sheet_backup">YEDEKLE</string>
     <string name="sheet_apply">SEÇENEKLERİ UYGULA</string>
     <string name="sheet_reset">FİLTRELERİ SIFIRLA</string>
@@ -144,13 +143,13 @@
     <string name="no_backups">Henüz yedek yok.</string>
     <string name="incomplete">Eksik yedek</string>
 
-    <string name="part_app">Uygulama (APK)</string>
+    <string name="part_app">APK</string>
     <string name="part_data">Veri</string>
     <string name="part_data_hint">Uygulama içindeki hesaplar, ayarlar ve dosyalar. Önbellek alınmaz.</string>
     <string name="part_obb">OBB</string>
     <string name="part_external">Harici veri</string>
     <string name="part_external_hint">Android/data klasörü. Çok büyük olabilir.</string>
-    <string name="part_all_data">Yedekteki tüm veriler</string>
+    <string name="part_all_data">Veri ve Harici veri</string>
     <string name="part_permissions">İzinler</string>
     <string name="part_permissions_hint">Çalışma zamanı izinleri, özel erişim ve pil istisnası.</string>
     <string name="keystore_hint">Verisini bu telefona bağlayan uygulamalar (bankacılık, doğrulayıcılar) yeniden giriş isteyebilir.</string>
@@ -248,9 +247,9 @@
     <string name="permissions_restored">%1$s izin geri verildi</string>
 
     <string name="stage_prepare">Hazırlanıyor</string>
-    <string name="stage_apk">Uygulama</string>
-    <string name="stage_obb">OBB</string>
-    <string name="stage_data">Veri</string>
+    <string name="stage_apk">APK kopyalanıyor</string>
+    <string name="stage_obb">OBB kopyalanıyor</string>
+    <string name="stage_data">Veri kopyalanıyor</string>
     <string name="stage_files">Dosyalar</string>
     <string name="kind_media">Medya</string>
     <string name="quick_group_backup">YEDEKLE</string>
@@ -359,4 +358,5 @@
     <string name="pcs_empty">Henüz güvenilen bilgisayar yok.</string>
     <string name="pcs_forget">Unut</string>
     <string name="pcs_hint">Güvenilen bilgisayar burada mesaj, arama kaydı, duvar kağıdı ve sistem ayarı yedeğini sormadan başlatabilir.</string>
+    <string name="stage_external">Harici veri kopyalanıyor</string>
 </resources>

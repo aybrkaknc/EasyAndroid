@@ -82,7 +82,7 @@ fun BackupSheet(count: Int, onDismiss: () -> Unit, note: String? = null, onConfi
                 ChipSpec(R.string.part_apk, selected = true, enabled = false),
                 ChipSpec(R.string.part_data, options.data) { options = options.copy(data = !options.data) },
                 ChipSpec(R.string.part_external, options.externalData) { options = options.copy(externalData = !options.externalData) },
-                ChipSpec(R.string.part_expansion, options.obb) { options = options.copy(obb = !options.obb) },
+                ChipSpec(R.string.part_obb, options.obb) { options = options.copy(obb = !options.obb) },
             )
             Text(stringResource(R.string.compression), Modifier.padding(top = 20.dp, bottom = 12.dp), style = MaterialTheme.typography.titleMedium)
             // The PC receives plain archives, which is also what EasyADB writes itself.

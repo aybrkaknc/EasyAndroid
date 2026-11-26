@@ -7,7 +7,7 @@ import java.io.OutputStream
 import java.security.MessageDigest
 import kotlin.concurrent.thread
 
-enum class Stage { PREPARE, APK, OBB, DATA, FILES, VERIFY, INSTALL, PERMISSIONS, DEBLOAT, SETTINGS, TRANSFER, WAITING, QUEUED }
+enum class Stage { PREPARE, APK, OBB, DATA, EXTERNAL, FILES, VERIFY, INSTALL, PERMISSIONS, DEBLOAT, SETTINGS, TRANSFER, WAITING, QUEUED }
 
 /** Progress and cancellation of one job. */
 class Task(

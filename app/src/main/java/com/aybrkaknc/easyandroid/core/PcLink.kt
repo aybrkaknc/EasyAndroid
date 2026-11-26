@@ -15,6 +15,8 @@ data class PcRequest(
     val type: String,
     val phone: String = "",
     @SerialName("package") val packageName: String = "",
+    /** The name shown for [packageName], so that the PC can show the same one. */
+    val label: String = "",
     val data: Boolean = false,
     val obb: Boolean = false,
     val externalData: Boolean = false,
@@ -229,6 +231,7 @@ class PcLink(
             "apk" -> Stage.APK
             "obb" -> Stage.OBB
             "data" -> Stage.DATA
+            "external" -> Stage.EXTERNAL
             "files" -> Stage.FILES
             "verify" -> Stage.VERIFY
             else -> Stage.TRANSFER

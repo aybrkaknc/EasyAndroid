@@ -178,6 +178,7 @@ fun stageId(stage: Stage): Int = when (stage) {
     Stage.APK -> R.string.stage_apk
     Stage.OBB -> R.string.stage_obb
     Stage.DATA -> R.string.stage_data
+    Stage.EXTERNAL -> R.string.stage_external
     Stage.FILES -> R.string.stage_files
     Stage.VERIFY -> R.string.stage_verify
     Stage.INSTALL -> R.string.stage_install

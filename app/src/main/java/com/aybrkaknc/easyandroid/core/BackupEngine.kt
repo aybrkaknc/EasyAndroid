@@ -102,7 +102,8 @@ class BackupEngine(
                 val stored = if (options.compress) "$name.tar.zst" else "$name.tar"
                 return try {
                     val sockets = shell.run("find ${q("$parent/$packageName")} -type s 2>/dev/null").out
-                    val saved = save(Stage.DATA, tarScript(parent, packageName, sockets), stored, options.compress)
+                    val step = if (note == Note.EXTERNAL_DATA_FAILED) Stage.EXTERNAL else Stage.DATA
+                    val saved = save(step, tarScript(parent, packageName, sockets), stored, options.compress)
                     if (saved.size == 0L) throw AppException(ErrorCode.COMMAND_FAILED, stored)
                     stored to saved
                 } catch (e: Exception) {

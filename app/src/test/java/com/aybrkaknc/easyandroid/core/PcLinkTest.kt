@@ -50,6 +50,13 @@ private class Mailbox : Root {
 }
 
 class PcLinkTest {
+    @Test
+    fun namesTheExternalStepAndSendsTheAppName() {
+        assertEquals(Stage.EXTERNAL, PcLink.stageOf("external"))
+        val text = JSON.encodeToString(PcRequest.serializer(), request().copy(label = "TikTok"))
+        assertTrue(text, "TikTok" in text && "\"label\"" in text)
+    }
+
     private fun status(state: String, extra: String = "") =
         """{"id":"job-1","state":"$state"$extra}"""
 

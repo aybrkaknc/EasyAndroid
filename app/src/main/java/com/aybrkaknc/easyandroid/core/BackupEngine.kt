@@ -100,9 +100,9 @@ class BackupEngine(
                     return null
                 }
                 val stored = if (options.compress) "$name.tar.zst" else "$name.tar"
-                val excludes = listOf("cache", "code_cache", "lib").joinToString(" ") { "--exclude $packageName/$it" }
                 return try {
-                    val saved = save(Stage.DATA, "tar -cf - -C ${q(parent)} $excludes $packageName", stored, options.compress)
+                    val sockets = shell.run("find ${q("$parent/$packageName")} -type s 2>/dev/null").out
+                    val saved = save(Stage.DATA, tarScript(parent, packageName, sockets), stored, options.compress)
                     if (saved.size == 0L) throw AppException(ErrorCode.COMMAND_FAILED, stored)
                     stored to saved
                 } catch (e: Exception) {
@@ -186,4 +186,15 @@ internal fun Root.stopUnlessSystem(packageName: String) {
     val system = run("pm list packages -s --user 0 $packageName").out.lines()
         .any { it.trim() == "package:$packageName" }
     if (!system) run("am force-stop --user 0 $packageName")
+}
+
+/**
+ * `tar` script for one data folder. The caches are rebuilt by the app and only add size.
+ * [sockets] are full paths, one per line: `tar` fails on them and the app makes them again.
+ */
+internal fun tarScript(parent: String, packageName: String, sockets: String): String {
+    val caches = listOf("cache", "code_cache", "lib").map { "$packageName/$it" }
+    val found = sockets.lines().filter { it.startsWith("$parent/") }.map { Sh.quote(it.removePrefix("$parent/")) }
+    val excludes = (caches + found).joinToString(" ") { "--exclude $it" }
+    return "tar -cf - -C ${Sh.quote(parent)} $excludes $packageName"
 }

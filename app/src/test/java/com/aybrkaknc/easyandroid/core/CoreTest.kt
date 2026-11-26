@@ -32,6 +32,16 @@ class FakeRoot(private vararg val answers: Pair<String, RootResult>) : Root {
 
 class CoreTest {
     @Test
+    fun leavesSocketsOutOfTheArchive() {
+        val found = "/data/data/com.a/files/socket_pipe\n/data/data/com.a/it's here\n\n"
+        val script = tarScript("/data/data", "com.a", found)
+        assertTrue(script, "--exclude ${Sh.quote("com.a/files/socket_pipe")}" in script)
+        assertTrue(script, "--exclude ${Sh.quote("com.a/it's here")}" in script)
+        assertTrue(script, script.endsWith(" com.a"))
+        assertEquals(3, tarScript("/data/data", "com.a", "").split("--exclude").size - 1)
+    }
+
+    @Test
     fun stopsOnlyAppsOutsideTheSystem() {
         val system = FakeRoot("pm list packages -s" to RootResult(0, "package:com.a" + 10.toChar()))
         system.stopUnlessSystem("com.a")

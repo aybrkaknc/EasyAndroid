@@ -89,7 +89,8 @@ class PcLink(
         ).orThrow()
     }
 
-    private fun read(name: String): String = shell.run("cat ${q("$BOX/$name")} 2>/dev/null").out.trim()
+    /** The text of a file in the mailbox. Most of them are often not there, which is not a failure. */
+    private fun read(name: String): String = q("$BOX/$name").let { shell.run("[ ! -e $it ] || cat $it").out.trim() }
 
     /** Seconds on the phone's clock. */
     private fun clock(): Long = shell.run("date +%s").out.trim().toLongOrNull() ?: 0

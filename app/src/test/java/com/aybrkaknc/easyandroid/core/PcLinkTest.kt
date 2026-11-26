@@ -24,9 +24,9 @@ private class Mailbox : Root {
             "cat /data/local/tmp/easyandroid/pc " in script -> RootResult(0, (beat?.let { "1 $it" } ?: "") + "\n@@\n$now")
             script == "date +%s" -> RootResult(0, "$now")
             script == "getprop ro.serialno" -> RootResult(0, "ABC123")
-            "status.json 2>/dev/null" in script && script.startsWith("cat") -> RootResult(0, status)
+            script.endsWith("cat /data/local/tmp/easyandroid/status.json") -> RootResult(0, status)
             "pc-backups.json" in script -> RootResult(0, records)
-            "job.json 2>/dev/null" in script -> RootResult(0, job)
+            script.endsWith("cat /data/local/tmp/easyandroid/job.json") -> RootResult(0, job)
             "printf %s" in script && "request.json.tmp" in script -> {
                 request = Regex("printf %s ('.*?'|\\S+) >", RegexOption.DOT_MATCHES_ALL).find(script)!!.groupValues[1].trim('\'')
                 RootResult(0, "")

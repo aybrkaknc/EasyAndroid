@@ -32,6 +32,17 @@ class FakeRoot(private vararg val answers: Pair<String, RootResult>) : Root {
 
 class CoreTest {
     @Test
+    fun stopsOnlyAppsOutsideTheSystem() {
+        val system = FakeRoot("pm list packages -s" to RootResult(0, "package:com.a" + 10.toChar()))
+        system.stopUnlessSystem("com.a")
+        assertTrue(system.calls.none { "force-stop" in it })
+
+        val user = FakeRoot("pm list packages -s" to RootResult(0, "package:com.abc" + 10.toChar()))
+        user.stopUnlessSystem("com.a")
+        assertTrue(user.calls.any { it == "am force-stop --user 0 com.a" })
+    }
+
+    @Test
     fun quotesOnlyWhenNeeded() {
         assertEquals("com.example.app", Sh.quote("com.example.app"))
         assertEquals("'my file.txt'", Sh.quote("my file.txt"))

@@ -62,7 +62,7 @@ class RestoreEngine(
             }
         }
 
-        if (archives.isNotEmpty() || obbs.isNotEmpty()) shell.run("am force-stop --user 0 $packageName")
+        if (archives.isNotEmpty() || obbs.isNotEmpty()) shell.stopUnlessSystem(packageName)
         if (obbs.isNotEmpty()) {
             task.progress(Stage.OBB)
             attempt(Note.OBB_FAILED) { restoreObb(obbs, dir, packageName, sdk) }
@@ -92,7 +92,7 @@ class RestoreEngine(
             if (failed.isNotEmpty()) notes += NoteDetail(Note.APP_OPS_FAILED, failed.joinToString { it.op })
             if (manifest.batteryExempt) shell.run("dumpsys deviceidle whitelist +$packageName")
         }
-        shell.run("am force-stop --user 0 $packageName")
+        shell.stopUnlessSystem(packageName)
         return RestoreOutcome(granted, wanted.size, notes)
     }
 

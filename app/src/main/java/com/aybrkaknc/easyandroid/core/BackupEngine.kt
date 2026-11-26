@@ -69,7 +69,7 @@ class BackupEngine(
         val id = folderName(packageName, now)
         val dir = store.dir(id)
         if (exists(dir)) throw AppException(ErrorCode.INVALID_INPUT, id)
-        if (options.data || options.externalData) shell.run("am force-stop --user 0 $packageName")
+        if (options.data || options.externalData) shell.stopUnlessSystem(packageName)
 
         try {
             shell.run("mkdir -p ${q("$dir/apk")}").orThrow()
@@ -179,4 +179,11 @@ class BackupEngine(
     private companion object {
         const val RESERVE = 512L * 1024 * 1024
     }
+}
+
+/** Stops an app so that its data holds still. A system app is left running: Android would start it again at once. */
+internal fun Root.stopUnlessSystem(packageName: String) {
+    val system = run("pm list packages -s --user 0 $packageName").out.lines()
+        .any { it.trim() == "package:$packageName" }
+    if (!system) run("am force-stop --user 0 $packageName")
 }

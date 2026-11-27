@@ -28,7 +28,12 @@ data class UiText(@param:StringRes val id: Int, val args: List<String> = emptyLi
 
 enum class ResultKind { OK, WARNING, FAILED }
 
-data class JobResult(val name: String, val kind: ResultKind, val lines: List<UiText>)
+data class JobResult(
+    val name: String,
+    val kind: ResultKind,
+    val lines: List<UiText>,
+    val notTried: Boolean = false,
+)
 
 data class JobState(
     @param:StringRes val title: Int,
@@ -43,6 +48,17 @@ data class JobState(
     val cancelled: Boolean = false,
     val finished: Boolean = false,
     val results: List<JobResult> = emptyList(),
+    /** About the item that runs; after the end, about the first one. */
+    val info: ItemInfo = ItemInfo(),
+    /** The parts of the current item that moved something; null when that is not known. */
+    val seen: Set<Stage>? = null,
+    val lane: Lane? = null,
+    /** On the clock that counts since the phone started, in milliseconds. */
+    val startedAt: Long = 0,
+    /** How long the job took, once it has ended. */
+    val seconds: Long = 0,
+    /** True when what did not make it can be started again. */
+    val retryable: Boolean = false,
 )
 
 /** Runs one job at a time. A failing item never stops the rest; everything is reported at the end. */
@@ -54,18 +70,26 @@ object Jobs {
     @Volatile
     private var cancelled = false
 
+    @Volatile
+    private var again: (() -> Unit)? = null
+
+    /** [retry] starts the job again for the items it is given, which are those that did not make it. */
     fun <T> start(
         context: Context,
         @StringRes title: Int,
         items: List<T>,
         name: (T) -> String,
         after: () -> Unit = {},
+        info: (T) -> ItemInfo = { ItemInfo() },
+        retry: ((List<T>) -> Unit)? = null,
         work: (T, Task) -> List<UiText>,
     ) {
         if (items.isEmpty() || flow.value?.finished == false) return
         val app = context.applicationContext
         cancelled = false
-        flow.value = JobState(title, items.size)
+        again = null
+        val startedAt = SystemClock.elapsedRealtime()
+        flow.value = JobState(title, items.size, info = info(items.first()), startedAt = startedAt)
         runCatching { ContextCompat.startForegroundService(app, Intent(app, JobService::class.java)) }
         scope.launch {
             val lock = app.getSystemService(PowerManager::class.java)
@@ -73,7 +97,7 @@ object Jobs {
             lock.acquire(6 * 60 * 60 * 1000L)
             try {
                 fun notTried(from: Int) = items.drop(from).map {
-                    JobResult(name(it), ResultKind.FAILED, listOf(UiText(R.string.not_tried)))
+                    JobResult(name(it), ResultKind.FAILED, listOf(UiText(R.string.not_tried)), notTried = true)
                 }
                 for ((index, item) in items.withIndex()) {
                     if (cancelled) {
@@ -82,7 +106,13 @@ object Jobs {
                     }
                     val label = name(item)
                     var stop = false
-                    flow.update { it?.copy(index = index, item = label, stage = Stage.PREPARE, done = 0, size = 0) }
+                    val about = info(item)
+                    flow.update {
+                        it?.copy(
+                            index = index, item = label, stage = Stage.PREPARE, done = 0, size = 0,
+                            info = about, seen = if (about.remote) null else emptySet(), lane = it.lane?.restart(),
+                        )
+                    }
                     val result = try {
                         val lines = work(item, task())
                         JobResult(label, if (lines.any { it.id in WARNINGS }) ResultKind.WARNING else ResultKind.OK, lines)
@@ -103,7 +133,17 @@ object Jobs {
                 }
             } finally {
                 if (lock.isHeld) lock.release()
-                flow.update { it?.copy(finished = true, index = it.results.size) }
+                // The results are in the order of the items, so a place in one is a place in the other.
+                val left = flow.value?.results.orEmpty().withIndex()
+                    .filter { it.value.kind == ResultKind.FAILED }.map { items[it.index] }
+                if (retry != null && left.isNotEmpty()) again = { retry(left) }
+                val seconds = (SystemClock.elapsedRealtime() - startedAt) / 1000
+                flow.update {
+                    it?.copy(
+                        finished = true, index = it.results.size, info = info(items.first()),
+                        seconds = seconds, retryable = again != null,
+                    )
+                }
                 flow.value?.let { ReportLog.add(app, it) }
                 after()
             }
@@ -112,13 +152,31 @@ object Jobs {
 
     private fun task(): Task {
         var last = 0L
-        return Task({ cancelled }) { stage, done, size ->
-            val now = SystemClock.elapsedRealtime()
-            if (now - last > 150 || flow.value?.stage != stage) {
-                last = now
-                flow.update { it?.copy(stage = stage, done = done, size = size) }
-            }
-        }
+        return Task(
+            isCancelled = { cancelled },
+            onProgress = { stage, done, size ->
+                val now = SystemClock.elapsedRealtime()
+                if (now - last > 150 || flow.value?.stage != stage) {
+                    last = now
+                    flow.update {
+                        it?.copy(
+                            stage = stage, done = done, size = size,
+                            // What the PC does is only known from what it reports.
+                            seen = if (it.info.remote) it.seen else it.seen.orEmpty() + stage,
+                            lane = if (size > 0) nextLane(it.lane, done, size, now) else it.lane,
+                        )
+                    }
+                }
+            },
+            onSeen = { stages -> flow.update { it?.copy(seen = stages) } },
+        )
+    }
+
+    fun retry() {
+        val start = again ?: return
+        if (flow.value?.finished != true) return
+        again = null
+        start()
     }
 
     fun cancel() {

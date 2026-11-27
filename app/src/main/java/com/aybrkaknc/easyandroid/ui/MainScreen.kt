@@ -8,9 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -19,14 +17,11 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -50,11 +45,8 @@ import com.aybrkaknc.easyandroid.Env
 import com.aybrkaknc.easyandroid.MainViewModel
 import com.aybrkaknc.easyandroid.R
 import com.aybrkaknc.easyandroid.RootState
-import com.aybrkaknc.easyandroid.job.JobState
 import com.aybrkaknc.easyandroid.job.Jobs
 import com.aybrkaknc.easyandroid.job.PcApproval
-import com.aybrkaknc.easyandroid.job.ResultKind
-import com.aybrkaknc.easyandroid.job.stageId
 
 private enum class Tab(@param:StringRes val title: Int) {
     HOME(R.string.tab_home), BACKUPS(R.string.tab_backups), DEBLOAT(R.string.tab_debloat), SETTINGS(R.string.tab_settings),
@@ -276,81 +268,4 @@ private fun NoRoot(onRetry: () -> Unit) {
         Text(stringResource(R.string.no_root_text), textAlign = TextAlign.Center)
         Button(onRetry) { Text(stringResource(R.string.retry)) }
     }
-}
-
-@Composable
-private fun JobScreen(job: JobState) {
-    val context = LocalContext.current
-    BackHandler(enabled = job.finished) { Jobs.dismiss() }
-    Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(stringResource(job.title), style = MaterialTheme.typography.titleLarge)
-        if (job.finished) {
-            val failed = job.results.count { it.kind == ResultKind.FAILED }
-            Text(stringResource(if (job.cancelled) R.string.job_summary_cancelled else R.string.job_summary, job.results.size - failed, job.total, failed))
-        } else {
-            Text(stringResource(R.string.job_position, job.index + 1, job.total, job.item))
-            LinearProgressIndicator(progress = { job.index.toFloat() / job.total }, modifier = Modifier.fillMaxWidth())
-            Text(
-                stringResource(stageId(job.stage)) +
-                    if (job.size > 0) "  " + formatSize(job.done) + " / " + formatSize(job.size) else "",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            if (job.size > 0) {
-                LinearProgressIndicator(progress = { (job.done.toFloat() / job.size).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
-            } else {
-                LinearProgressIndicator(Modifier.fillMaxWidth())
-            }
-        }
-        LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            // Problems first, so that they are not lost in a long list.
-            items(if (job.finished) job.results.sortedByDescending { it.kind } else job.results.asReversed()) { result ->
-                Column {
-                    val color = when (result.kind) {
-                        ResultKind.OK -> MaterialTheme.colorScheme.onSurface
-                        ResultKind.WARNING -> MaterialTheme.colorScheme.tertiary
-                        ResultKind.FAILED -> MaterialTheme.colorScheme.error
-                    }
-                    val status = when (result.kind) {
-                        ResultKind.OK -> R.string.result_ok
-                        ResultKind.WARNING -> R.string.result_warning
-                        ResultKind.FAILED -> R.string.result_failed
-                    }
-                    Text(stringResource(R.string.result_line, result.name, stringResource(status)), color = color)
-                    result.lines.forEach { Hint(it.resolve(context)) }
-                }
-            }
-        }
-        if (job.finished) {
-            Button({ Jobs.dismiss() }, Modifier.fillMaxWidth()) { Text(stringResource(R.string.close)) }
-        } else {
-            // A backup or a restore that is cut off does harm, so cancelling one is asked about first.
-            var asking by remember { mutableStateOf(false) }
-            val question = cancelQuestion(job.title)
-            OutlinedButton(
-                { if (question == null) Jobs.cancel() else asking = true },
-                Modifier.fillMaxWidth(), enabled = !job.cancelling,
-            ) {
-                if (job.cancelling) CircularProgressIndicator() else Text(stringResource(R.string.cancel))
-            }
-            if (asking && question != null) {
-                ConfirmDialog(
-                    title = stringResource(question),
-                    confirm = stringResource(R.string.cancel_confirm),
-                    onConfirm = {
-                        asking = false
-                        Jobs.cancel()
-                    },
-                    onDismiss = { asking = false },
-                    dismiss = stringResource(R.string.cancel_keep),
-                ) { Text(stringResource(R.string.cancel_confirm_text)) }
-            }
-        }
-    }
-}
-
-/** What to ask before the job with this title is cancelled; null when it can just stop. */
-private fun cancelQuestion(title: Int): Int? = when (title) {
-    R.string.job_backup, R.string.job_system_backup -> R.string.cancel_backup_title
-    R.string.job_restore, R.string.job_system_restore -> R.string.cancel_restore_title
-    else -> null
 }

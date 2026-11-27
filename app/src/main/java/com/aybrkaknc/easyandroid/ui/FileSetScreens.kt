@@ -1,5 +1,7 @@
 package com.aybrkaknc.easyandroid.ui
 
+import com.aybrkaknc.easyandroid.job.UiText
+import com.aybrkaknc.easyandroid.job.ItemInfo
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -198,7 +200,12 @@ fun FileSetRestoreDialog(item: StoredFileSet, onDismiss: () -> Unit, onConfirm: 
  */
 fun startFileBackup(model: MainViewModel, kind: FileSetKind, folders: List<String>, target: Target = Target.PHONE, direct: Boolean = false) {
     val engine = Env.files()
-    Jobs.start(Env.app, R.string.job_backup, listOf(kind), { Env.app.getString(titleOf(it)) }, after = { model.refreshBackups() }) { item, task ->
+    val to = UiText(if (target == Target.PC) R.string.job_to_pc else R.string.job_to_phone)
+    Jobs.start(
+        Env.app, R.string.job_backup, listOf(kind), { Env.app.getString(titleOf(it)) }, after = { model.refreshBackups() },
+        info = { ItemInfo(detail = to) },
+        retry = { startFileBackup(model, kind, folders, target, direct) },
+    ) { item, task ->
         val pc = Env.pc()
         if (target == Target.PC && direct && !kind.fixed) {
             val request = PcRequest(id = PcLink.newId(), created = 0, type = "folders", names = folders)
@@ -216,7 +223,12 @@ fun startFileBackup(model: MainViewModel, kind: FileSetKind, folders: List<Strin
 
 fun startFileRestore(model: MainViewModel, item: StoredFileSet) {
     val engine = Env.files()
-    Jobs.start(Env.app, R.string.job_restore, listOf(item), { Env.app.getString(titleOf(it.set.kind)) }, after = { model.refreshBackups() }) { stored, task ->
+    Jobs.start(
+        Env.app, R.string.job_restore, listOf(item), { Env.app.getString(titleOf(it.set.kind)) },
+        after = { model.refreshBackups() },
+        info = { ItemInfo(createdAt = it.set.createdAt) },
+        retry = { startFileRestore(model, item) },
+    ) { stored, task ->
         engine.restore(stored.id, task)
         emptyList()
     }

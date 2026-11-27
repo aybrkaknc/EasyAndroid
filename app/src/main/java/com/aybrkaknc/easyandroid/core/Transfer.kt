@@ -13,6 +13,7 @@ enum class Stage { PREPARE, APK, OBB, DATA, EXTERNAL, FILES, VERIFY, INSTALL, PE
 class Task(
     private val isCancelled: () -> Boolean = { false },
     private val onStep: (String) -> Unit = {},
+    private val onSeen: (Set<Stage>) -> Unit = {},
     private val onProgress: (Stage, Long, Long) -> Unit = { _, _, _ -> },
 ) {
     fun cancelled() = isCancelled()
@@ -25,6 +26,9 @@ class Task(
     }
 
     fun progress(stage: Stage, done: Long = 0, total: Long = 0) = onProgress(stage, done, total)
+
+    /** The parts that the PC came across in the item it works on. */
+    fun seen(stages: Set<Stage>) = onSeen(stages)
 }
 
 class Stored(val size: Long, val sha256: String)

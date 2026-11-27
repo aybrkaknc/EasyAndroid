@@ -61,14 +61,10 @@ class JobService : Service() {
             .setContentIntent(open)
             .setOnlyAlertOnce(true)
         if (state == null) return builder.setContentTitle(getString(R.string.app_name)).build()
-        builder.setContentTitle(getString(state.title))
-        if (state.finished) {
-            val failed = state.results.count { it.kind == ResultKind.FAILED }
-            return builder.setAutoCancel(true)
-                .setContentText(getString(if (state.cancelled) R.string.job_summary_cancelled else R.string.job_summary, state.results.size - failed, state.total, failed)).build()
-        }
+        builder.setContentTitle(getString(heading(state)))
+        if (state.finished) return builder.setAutoCancel(true).setContentText(summary(this, state)).build()
         return builder.setOngoing(true)
-            .setContentText(getString(R.string.job_position, state.index + 1, state.total, state.item))
+            .setContentText(getString(R.string.job_notification, state.item, state.index + 1, state.total))
             .setProgress(state.total, state.index, false).build()
     }
 

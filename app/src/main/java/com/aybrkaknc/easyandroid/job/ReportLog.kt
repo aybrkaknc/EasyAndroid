@@ -10,7 +10,7 @@ import java.io.File
 import java.time.OffsetDateTime
 
 @Serializable
-data class ReportItem(val name: String, val kind: String, val lines: List<String>)
+data class ReportItem(val name: String, val kind: String, val lines: List<String>, val notTried: Boolean = false)
 
 /** What a finished job did. Texts are kept in the language they were shown in. */
 @Serializable
@@ -55,7 +55,9 @@ object ReportLog {
             time = timestamp(OffsetDateTime.now()),
             title = context.getString(job.title),
             total = job.total,
-            items = job.results.map { result -> ReportItem(result.name, result.kind.name, result.lines.map { it.resolve(context) }) },
+            items = job.results.map { result ->
+                ReportItem(result.name, result.kind.name, result.lines.map { it.resolve(context) }, result.notTried)
+            },
             cancelled = job.cancelled,
         )
         AppLog.write("job ${report.title}: ${report.done} done, ${report.failed} failed of ${report.total}" + if (report.cancelled) " (cancelled)" else "")

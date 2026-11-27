@@ -86,6 +86,7 @@ object PcJobs {
         link.reportJob(PcStatus(job.id, "running", stage = "prepare"))
         Jobs.start(
             context, R.string.job_backup, items, { it.label(context) },
+            info = { ItemInfo(detail = UiText(R.string.job_to_pc)) },
             after = {
                 val state = Jobs.state.value
                 val failed = state?.results.orEmpty().filter { it.kind == ResultKind.FAILED }

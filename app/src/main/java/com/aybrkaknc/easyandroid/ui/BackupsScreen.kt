@@ -1,5 +1,6 @@
 package com.aybrkaknc.easyandroid.ui
 
+import com.aybrkaknc.easyandroid.job.ItemInfo
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -383,7 +384,11 @@ private fun RestoreDialog(backups: List<StoredBackup>, onDismiss: () -> Unit, on
 
 private fun startRestore(model: MainViewModel, backups: List<StoredBackup>, options: RestoreOptions) {
     val engine = Env.restores()
-    Jobs.start(Env.app, R.string.job_restore, backups, { it.title }, after = { model.refresh() }) { backup, task ->
+    Jobs.start(
+        Env.app, R.string.job_restore, backups, { it.title }, after = { model.refresh() },
+        info = { ItemInfo(createdAt = it.manifest.createdAt, packageName = it.manifest.packageName) },
+        retry = { left -> startRestore(model, left, options) },
+    ) { backup, task ->
         val outcome = engine.restore(backup.id, options, android.os.Build.VERSION.SDK_INT, task)
         val lines = outcome.notes.map(::noteText).toMutableList()
         if (outcome.permissionsWanted > 0 && outcome.permissionsGranted == outcome.permissionsWanted) {

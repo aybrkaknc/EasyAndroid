@@ -1,5 +1,7 @@
 package com.aybrkaknc.easyandroid.ui
 
+import com.aybrkaknc.easyandroid.job.UiText
+import com.aybrkaknc.easyandroid.job.ItemInfo
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -177,9 +179,12 @@ fun SystemBackupScreen(model: MainViewModel, onDone: () -> Unit) {
 }
 
 private fun startBackup(model: MainViewModel, items: List<SystemItem>, target: Target) {
+    val to = UiText(if (target == Target.PC) R.string.job_to_pc else R.string.job_to_phone)
     Jobs.start(
         Env.app, R.string.job_system_backup, listOf(Unit), { Env.app.getString(R.string.tab_system) },
         after = { model.refreshBackups() },
+        info = { ItemInfo(detail = to) },
+        retry = { startBackup(model, items, target) },
     ) { _, task ->
         task.progress(Stage.SETTINGS)
         val name = Env.system().save(items, Env.backups().snapshot())

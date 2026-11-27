@@ -1,5 +1,6 @@
 package com.aybrkaknc.easyandroid.ui
 
+import com.aybrkaknc.easyandroid.job.ItemInfo
 import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -283,7 +284,10 @@ fun DebloatPlanDialog(entries: List<ProfileEntry>, apps: List<AppInfo>, onDismis
 internal fun startDebloat(model: MainViewModel, apps: List<AppInfo>, entries: List<ProfileEntry>) {
     val debloat = Env.debloat()
     val labels = apps.associate { it.packageName to it.label }
-    Jobs.start(Env.app, R.string.job_debloat, entries, { labels[it.packageName] ?: it.packageName }, after = { model.refresh() }) { entry, task ->
+    Jobs.start(
+        Env.app, R.string.job_debloat, entries, { labels[it.packageName] ?: it.packageName }, after = { model.refresh() },
+        info = { ItemInfo(packageName = it.packageName) },
+    ) { entry, task ->
         task.progress(Stage.DEBLOAT)
         debloat.apply(entry)
         emptyList()

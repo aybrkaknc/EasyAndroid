@@ -1,5 +1,6 @@
 package com.aybrkaknc.easyandroid.ui
 
+import com.aybrkaknc.easyandroid.job.arrange
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.clickable
@@ -80,30 +81,12 @@ fun ReportsScreen() {
                         color = if (report.failed > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                     )
                     if (open == index) {
-                        Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            report.items.sortedBy { ResultKind.valueOf(it.kind).ordinal * -1 }.forEach { item ->
-                                val kind = ResultKind.valueOf(item.kind)
-                                Column {
-                                    Text(
-                                        stringResource(
-                                            R.string.result_line, item.name,
-                                            stringResource(
-                                                when (kind) {
-                                                    ResultKind.OK -> R.string.result_ok
-                                                    ResultKind.WARNING -> R.string.result_warning
-                                                    ResultKind.FAILED -> R.string.result_failed
-                                                },
-                                            ),
-                                        ),
-                                        color = when (kind) {
-                                            ResultKind.OK -> MaterialTheme.colorScheme.onSurface
-                                            ResultKind.WARNING -> MaterialTheme.colorScheme.tertiary
-                                            ResultKind.FAILED -> MaterialTheme.colorScheme.error
-                                        },
-                                    )
-                                    item.lines.forEach { Hint(it) }
-                                }
-                            }
+                        val rows = report.items.map { ResultRow(it.name, ResultKind.valueOf(it.kind), it.lines, it.notTried) }
+                        val arranged = arrange(rows, { it.kind }, { it.notTried })
+                        Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            arranged.problems.forEach { ResultLine(it) }
+                            if (arranged.notTried.isNotEmpty()) NotTriedLine(arranged.notTried)
+                            arranged.fine.forEach { ResultLine(it) }
                         }
                     }
                 }

@@ -1,5 +1,8 @@
 package com.aybrkaknc.easyandroid.ui
 
+import com.aybrkaknc.easyandroid.job.UiText
+import com.aybrkaknc.easyandroid.job.ItemInfo
+import com.aybrkaknc.easyandroid.core.Stage
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -171,7 +174,17 @@ fun startBackup(model: MainViewModel, apps: List<AppInfo>, options: BackupOption
     val engine = Env.backups()
     val device by lazy { engine.snapshot() }
     val batch = PcLink.newId()
-    Jobs.start(Env.app, R.string.job_backup, apps, { it.label }, after = { model.refreshBackups() }) { app, task ->
+    // The order in which the parts are copied.
+    val parts = listOfNotNull(
+        Stage.APK, Stage.OBB.takeIf { options.obb }, Stage.DATA.takeIf { options.data },
+        Stage.EXTERNAL.takeIf { options.externalData },
+    )
+    val to = UiText(if (target == Target.PC) R.string.job_to_pc else R.string.job_to_phone)
+    Jobs.start(
+        Env.app, R.string.job_backup, apps, { it.label }, after = { model.refreshBackups() },
+        info = { ItemInfo(detail = to, packageName = it.packageName, parts = parts, remote = target == Target.PC) },
+        retry = { left -> startBackup(model, left, options, target) },
+    ) { app, task ->
         if (target == Target.PC) {
             val request = PcRequest(
                 id = PcLink.newId(), created = 0, type = "app", packageName = app.packageName, label = app.label,

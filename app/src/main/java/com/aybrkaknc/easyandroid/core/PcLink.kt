@@ -43,6 +43,8 @@ data class PcStatus(
     val total: Long = 0,
     val error: String? = null,
     val notes: List<String> = emptyList(),
+    /** The steps of this item that moved something. Null from an EasyADB that does not say. */
+    val seen: List<String>? = null,
 ) {
     val finished get() = state == "done" || state == "failed" || state == "rejected" || state == "cancelled"
 }
@@ -142,6 +144,7 @@ class PcLink(
                 if (status != null) {
                     if (status.state == "running") {
                         task.step(status.item)
+                        status.seen?.let { names -> task.seen(names.map(::stageOf).toSet()) }
                         task.progress(stageOf(status.stage), status.done, status.total)
                     }
                     if (status.state == "waiting") task.progress(if (status.stage == "busy") Stage.QUEUED else Stage.WAITING)

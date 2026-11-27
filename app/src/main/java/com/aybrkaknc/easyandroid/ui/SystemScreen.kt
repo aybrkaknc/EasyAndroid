@@ -87,7 +87,7 @@ private fun itemHint(item: SystemItem): String = when (item) {
 
 fun startApply(items: List<SystemItem>) {
     val system = Env.system()
-    Jobs.start(Env.app, R.string.job_system_restore, items, ::plainTitle) { item, task ->
+    Jobs.start(Env.app, R.string.job_system_restore, items, ::plainTitle, retry = ::startApply) { item, task ->
         task.progress(Stage.SETTINGS)
         system.apply(item)
         emptyList()

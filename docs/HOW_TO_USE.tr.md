@@ -45,7 +45,7 @@ EasyAndroid, root'lu bir Android telefonda PC olmadan uygulamaları yedekler, ge
 **Geri Yükle** sekmesini açın (veya Ana Sayfa'da **Uygulamalar**'a dokunup sayfasındaki geri yükleme seçeneklerini kullanın).
 
 * **Uygulamalar** sayfasındaki **Tüm uygulamaları geri yükle**, **Eksik uygulamaları geri yükle** ve **Yeni sürümleri geri yükle** Geri Yükle'yi ilgili yedekler işaretli açar. Devam etmek için **Geri yükle**'ye basın.
-* Neyin geri yükleneceğini seçersiniz: APK, Veri ve Harici veri, OBB ve İzinler. Süren bir yedek ya da geri yükleme iptal edilmeden önce onay sorulur. Uygulama zaten kuruluysa üzerine yazabilir veya atlayabilirsiniz; bir uygulama için ya da hepsi için.
+* Neyin geri yükleneceğini seçersiniz: APK, Veri ve Harici veri, OBB ve İzinler. Süren bir yedek ya da geri yükleme iptal edilmeden önce onay sorulur. İş sürerken sayfasında o anki öğe, kopyalanan bölümler, hız ve bitenler görünür. İş bitince sorunlular üstte listelenir; başarısız olan ve denenmeyenler yeniden başlatılabilir. Uygulama zaten kuruluysa üzerine yazabilir veya atlayabilirsiniz; bir uygulama için ya da hepsi için.
 * Telefonda bir şey değişmeden önce tüm özetler doğrulanır.
 * Önce uygulamalarınızı, sonra sistem yedeğini geri yükleyin; çünkü varsayılan uygulamalar için paketlerin kurulu olması gerekir.
 

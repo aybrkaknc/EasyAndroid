@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.text.format.Formatter
 import com.aybrkaknc.easyandroid.MainActivity
 import com.aybrkaknc.easyandroid.R
 import com.aybrkaknc.easyandroid.core.PcJob
@@ -97,8 +98,9 @@ object PcApproval {
         }
         return Notification.Builder(context, CHANNEL)
             .setSmallIcon(R.drawable.ic_restore)
-            .setContentTitle(context.getString(R.string.pc_ask_title, pcName(context, job)))
+            .setContentTitle(title(context, job))
             .setContentText(what(context, job))
+            .setStyle(Notification.BigTextStyle().bigText(what(context, job)))
             .setContentIntent(open)
             .setCategory(Notification.CATEGORY_CALL)
             .setTimeoutAfter(WAIT_MS)
@@ -110,8 +112,13 @@ object PcApproval {
     fun pcName(context: Context, job: PcJob): String =
         job.pcName.filter { !it.isISOControl() }.take(40).ifBlank { context.getString(R.string.pc_ask_unknown) }
 
+    fun title(context: Context, job: PcJob): String = context.getString(
+        if (job.type == "receive") R.string.pc_ask_send_title else R.string.pc_ask_title, pcName(context, job),
+    )
+
     /** What the PC wants, in words. */
     fun what(context: Context, job: PcJob): String {
+        if (job.type == "receive") return incoming(context, job)
         val kinds = when (job.type) {
             "system" -> listOf(R.string.tab_system)
             else -> job.kinds.mapNotNull {
@@ -125,6 +132,16 @@ object PcApproval {
         }
         return context.getString(R.string.pc_ask_text, kinds.joinToString(", ") { context.getString(it) })
     }
+}
+
+/** The folder, the size and the first names of what a PC wants to send. */
+private fun incoming(context: Context, job: PcJob): String {
+    val lines = mutableListOf(
+        context.getString(R.string.pc_ask_send_text, job.target, Formatter.formatShortFileSize(context, job.bytes)),
+    )
+    lines += job.names.take(5).map { name -> name.filter { !it.isISOControl() }.take(80) }
+    if (job.names.size > 5) lines += context.getString(R.string.pc_ask_send_more, job.names.size - 5)
+    return lines.joinToString("\n")
 }
 
 /** The buttons of the notification. Not exported, so only this app's notification reaches it. */

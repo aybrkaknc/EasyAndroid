@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -45,8 +46,10 @@ import com.aybrkaknc.easyandroid.Env
 import com.aybrkaknc.easyandroid.MainViewModel
 import com.aybrkaknc.easyandroid.R
 import com.aybrkaknc.easyandroid.RootState
+import com.aybrkaknc.easyandroid.job.JobKind
 import com.aybrkaknc.easyandroid.job.Jobs
 import com.aybrkaknc.easyandroid.job.PcApproval
+import com.aybrkaknc.easyandroid.job.jobKind
 
 private enum class Tab(@param:StringRes val title: Int) {
     HOME(R.string.tab_home), BACKUPS(R.string.tab_backups), DEBLOAT(R.string.tab_debloat), SETTINGS(R.string.tab_settings),
@@ -64,6 +67,9 @@ private fun Tab.icon(): Painter = when (this) {
 fun MainScreen(model: MainViewModel) {
     val root by model.root.collectAsStateWithLifecycle()
     val job by Jobs.state.collectAsStateWithLifecycle()
+    // Files that arrive have a window of their own; every other job takes the whole page.
+    val receiving = job?.takeIf { jobKind(it.title) == JobKind.RECEIVE }
+    val page = job.takeIf { receiving == null }
     val error by model.error.collectAsStateWithLifecycle()
     val offer by model.deleteOffer.collectAsStateWithLifecycle()
     val question by PcApproval.question.collectAsStateWithLifecycle()
@@ -122,22 +128,29 @@ fun MainScreen(model: MainViewModel) {
 
     Scaffold(
         bottomBar = {
-            if (job == null && !showApps && !showSystem && !showSearch && !(tab == Tab.SETTINGS && settingsPage != null)) {
-                NavigationBar {
-                    Tab.entries.forEach {
-                        NavigationBarItem(
-                            selected = tab == it,
-                            onClick = { tab = it },
-                            icon = { Icon(it.icon(), contentDescription = null) },
-                            label = { Text(stringResource(it.title), maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                        )
+            val navigation = page == null && !showApps && !showSystem && !showSearch && !(tab == Tab.SETTINGS && settingsPage != null)
+            Column {
+                receiving?.takeIf { it.hidden }?.let {
+                    // Without the navigation bar the strip is the lowest thing and keeps clear of the system's.
+                    ReceiveStrip(it, if (navigation) Modifier else Modifier.navigationBarsPadding())
+                }
+                if (navigation) {
+                    NavigationBar {
+                        Tab.entries.forEach {
+                            NavigationBarItem(
+                                selected = tab == it,
+                                onClick = { tab = it },
+                                icon = { Icon(it.icon(), contentDescription = null) },
+                                label = { Text(stringResource(it.title), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                            )
+                        }
                     }
                 }
             }
         },
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
-            val current = job
+            val current = page
             when {
                 current != null -> JobScreen(current)
                 showApps -> Overlay(stringResource(R.string.home_quick_backup), { showApps = false }) { AppsScreen(model, preselect) }
@@ -196,7 +209,7 @@ fun MainScreen(model: MainViewModel) {
     if (showEasyAdb) WirelessSheet(model, easyAdb = true) { showEasyAdb = false }
 
     // The PC checked its copy, so the one on the phone can go. Never without asking.
-    if (offer.isNotEmpty() && job == null) {
+    if (offer.isNotEmpty() && page == null) {
         ConfirmDialog(
             title = stringResource(R.string.pc_delete_title),
             confirm = stringResource(R.string.delete),
@@ -232,6 +245,8 @@ fun MainScreen(model: MainViewModel) {
             ids.forEach { Hint(it) }
         }
     }
+
+    receiving?.takeIf { !it.hidden }?.let { ReceiveDialog(it) }
 
     question?.let { PcQuestionDialog(it) }
 

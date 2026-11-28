@@ -20,8 +20,9 @@ EasyAndroid, root'lu bir Android telefonda PC olmadan uygulamaları yedekler, ge
 8. [Kablosuz hata ayıklama ve EasyADB](#kablosuz-hata-ayıklama-ve-easyadb)
 9. [Yedekleri PC'ye taşıma](#yedekleri-pcye-taşıma)
 10. [Doğrudan PC'ye yedekleme](#doğrudan-pcye-yedekleme)
-11. [Ayarlar](#ayarlar)
-12. [Bilinmesi gerekenler](#bilinmesi-gerekenler)
+11. [PC'den dosya alma](#pcden-dosya-alma)
+12. [Ayarlar](#ayarlar)
+13. [Bilinmesi gerekenler](#bilinmesi-gerekenler)
 
 ## Başlamadan önce
 
@@ -95,6 +96,14 @@ Bunun için telefona adb ile (USB veya Kablosuz hata ayıklama) bağlı bir PC'd
 * PC'nin elindeki uygulamalar **Bekleyen uygulamaları yedekle** ve **Güncellenen uygulamaları yedekle** için yedeklenmiş sayılır.
 * PC'den, EasyADB'nin **Telefon verileri** sekmesi bu telefondan mesaj, arama kaydı, duvar kâğıdı ve sistem ayarı yedeklerini ister ve kopyalar. Telefon önce bildirimle ve uygulama içinde sorar: **Reddet**, **Yalnızca bu sefer** veya **Bu bilgisayara güven**. 2 dakika yanıt verilmezse hiçbir şey başlamaz. Güvenilen bilgisayarlar Ayarlar'da **Güvenilen bilgisayarlar** altındadır. Bu soru yalnızca EasyAndroid'in yaptıklarını kapsar; adb üzerinden root'u olan bir PC telefonu kendisi de okuyabilir. Bildirimler kapalıysa EasyADB telefonda EasyAndroid'i açar.
 * Kabuğa root vermek, telefonla eşleşmiş her PC'nin telefonda root komutu çalıştırabilmesi demektir. Yalnızca kendi PC'lerinizi eşleştirin.
+
+## PC'den dosya alma
+
+* EasyADB'nin **Dosyalar** sayfasından bu telefona dosya gönderilince telefon önce sorar: hedef klasör, toplam boyut ve dosya adları yazar. **Reddet**, **Yalnızca bu sefer** veya **Bu bilgisayara güven**. 2 dakika yanıt verilmezse hiçbir şey gönderilmez. Güvenilen bilgisayarlar sorulmadan gönderir. Güven listesi yedek işleriyle ortaktır.
+* Dosyalar gelirken bir pencere ad, sıra, hız ve kalan süreyi gösterir. **Arka plana al** pencereyi küçültür: uygulamanın altındaki ince şerit ve bildirim ilerlemeyi gösterir, dokununca pencere geri gelir. Aktarım sürerken başka iş başlamaz.
+* **İptal** (pencerede veya bildirimde) onay ister. Yarım kopyalanan dosya telefonda kalır.
+* Bitince pencere sonucu gösterir. Hedef ortak depolamadaysa ve bir dosya uygulaması açabiliyorsa **Klasörü aç** görünür.
+* Bu soru yalnızca EasyAndroid kurulu ve root izni varken sorulur; yoksa EasyADB dosyaları doğrudan gönderir.
 
 ## Ayarlar
 

@@ -44,7 +44,7 @@ fun PcQuestionDialog(question: PcQuestion) {
     AlertDialog(
         onDismissRequest = {},
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
-        title = { Text(stringResource(R.string.pc_ask_title, PcApproval.pcName(context, job))) },
+        title = { Text(PcApproval.title(context, job)) },
         text = {
             Column {
                 Text(PcApproval.what(context, job))

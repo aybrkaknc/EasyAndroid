@@ -4,13 +4,14 @@ import android.content.Context
 import com.aybrkaknc.easyandroid.R
 
 /** What a job does, which decides the words it is shown with. */
-enum class JobKind { BACKUP, RESTORE, EXPORT, IMPORT, DEBLOAT }
+enum class JobKind { BACKUP, RESTORE, EXPORT, IMPORT, DEBLOAT, RECEIVE }
 
 fun jobKind(title: Int): JobKind = when (title) {
     R.string.job_restore, R.string.job_system_restore -> JobKind.RESTORE
     R.string.job_export -> JobKind.EXPORT
     R.string.job_import -> JobKind.IMPORT
     R.string.job_debloat -> JobKind.DEBLOAT
+    R.string.job_receive -> JobKind.RECEIVE
     else -> JobKind.BACKUP
 }
 
@@ -20,6 +21,7 @@ private fun runningTitle(kind: JobKind): Int = when (kind) {
     JobKind.EXPORT -> R.string.running_export
     JobKind.IMPORT -> R.string.running_import
     JobKind.DEBLOAT -> R.string.running_debloat
+    JobKind.RECEIVE -> R.string.running_receive
 }
 
 /** In the order of [Outcome]. */
@@ -29,6 +31,7 @@ private fun endTitles(kind: JobKind): List<Int> = when (kind) {
     JobKind.EXPORT -> listOf(R.string.end_export_done, R.string.end_export_warning, R.string.end_export_incomplete, R.string.end_export_cancelled)
     JobKind.IMPORT -> listOf(R.string.end_import_done, R.string.end_import_warning, R.string.end_import_incomplete, R.string.end_import_cancelled)
     JobKind.DEBLOAT -> listOf(R.string.end_debloat_done, R.string.end_debloat_warning, R.string.end_debloat_incomplete, R.string.end_debloat_cancelled)
+    JobKind.RECEIVE -> listOf(R.string.end_receive_done, R.string.end_receive_warning, R.string.end_receive_incomplete, R.string.end_receive_cancelled)
 }
 
 /** The first heading of the job: what it does while it runs, how it ended after that. */

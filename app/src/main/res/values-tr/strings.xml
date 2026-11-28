@@ -229,6 +229,8 @@
     <string name="about_text">GPL-3.0. Paket açıklamaları Universal Android Debloater Next Generation\'dan alınmıştır.</string>
 
     <string name="channel_jobs">Çalışan işlemler</string>
+    <string name="channel_results">Biten işlemler</string>
+    <string name="channel_problems">Sorunlu işlemler</string>
     <string name="job_backup">Yedekleme</string>
     <string name="job_restore">Geri yükleme</string>
     <string name="job_export">Dışa aktarma</string>
@@ -403,4 +405,20 @@
     <string name="job_retry">Başarısızları yeniden dene</string>
     <string name="step_absent">%1$s - yok</string>
     <string name="not_tried_count">%1$d tanesi denenmedi</string>
+    <string name="job_receive">Dosya aktarımı</string>
+    <string name="running_receive">Dosyalar alınıyor...</string>
+    <string name="end_receive_done">Dosyalar alındı</string>
+    <string name="end_receive_warning">Dosyalar uyarılarla alındı</string>
+    <string name="end_receive_incomplete">Aktarım tamamlanmadı</string>
+    <string name="end_receive_cancelled">Aktarım iptal edildi</string>
+    <string name="receive_target">%1$s klasörüne · %2$s gönderiyor</string>
+    <string name="receive_background">Arka plana al</string>
+    <string name="receive_open_folder">Klasörü aç</string>
+    <string name="receive_busy">Dosya alınıyor. Bitmesini bekleyin.</string>
+    <string name="cancel_receive_title">Aktarım iptal edilsin mi?</string>
+    <string name="cancel_receive_text">Onaylayana kadar sürer. Yarım kopyalanan dosya telefonda kalır.</string>
+    <string name="err_pc_stopped">Bilgisayar göndermeyi durdurdu.</string>
+    <string name="pc_ask_send_title">%1$s bu telefona dosya göndermek istiyor</string>
+    <string name="pc_ask_send_text">%1$s klasörüne (%2$s):</string>
+    <string name="pc_ask_send_more">ve %1$d tane daha</string>
 </resources>

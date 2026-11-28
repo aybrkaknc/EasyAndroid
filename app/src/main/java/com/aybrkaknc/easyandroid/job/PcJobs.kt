@@ -1,6 +1,7 @@
 package com.aybrkaknc.easyandroid.job
 
 import android.content.Context
+import android.os.SystemClock
 import com.aybrkaknc.easyandroid.Env
 import com.aybrkaknc.easyandroid.R
 import com.aybrkaknc.easyandroid.TrustedPc
@@ -34,6 +35,9 @@ object PcJobs {
     )
 
     private val lock = Mutex()
+
+    /** A PC that says nothing for this long is gone. */
+    private const val SILENCE_MS = 20_000L
 
     /**
      * Runs the job that the PC left, if any. Returns when the job was started or refused, which is
@@ -73,7 +77,54 @@ object PcJobs {
         return true
     }
 
+    /**
+     * Follows files that the PC sends. The PC copies them itself; this only shows how far it is and
+     * lets the user stop it.
+     */
+    private fun receive(context: Context, job: PcJob) {
+        val link = Env.pc()
+        if (job.names.isEmpty()) return refuse(job, job.type)
+        link.reportJob(PcStatus(job.id, "running"))
+        var beat = -1L
+        var heard = SystemClock.elapsedRealtime()
+        val from = UiText(R.string.receive_target, listOf(job.target, PcApproval.pcName(context, job)))
+        Jobs.start(
+            context, R.string.job_receive, job.names.indices.toList(), { job.names[it] },
+            info = { ItemInfo(detail = from, remote = true, folder = job.target) },
+            after = {
+                val state = Jobs.state.value
+                val status = when {
+                    state?.cancelled == true -> "cancelled"
+                    state?.results.orEmpty().any { it.kind == ResultKind.FAILED } -> "failed"
+                    else -> "done"
+                }
+                runCatching { link.reportJob(PcStatus(job.id, status)) }
+            },
+        ) { index, task ->
+            while (true) {
+                task.check()
+                val progress = link.progress(job.id)
+                val now = SystemClock.elapsedRealtime()
+                if (progress != null && progress.beat != beat) {
+                    beat = progress.beat
+                    heard = now
+                }
+                when (receiveStep(progress, index)) {
+                    ReceiveStep.ARRIVED -> break
+                    ReceiveStep.CANCELLED -> throw AppException(ErrorCode.CANCELLED)
+                    ReceiveStep.STOPPED -> throw AppException(ErrorCode.PC_STOPPED)
+                    ReceiveStep.RUNNING -> progress?.let { task.progress(Stage.TRANSFER, it.done, it.total) }
+                    ReceiveStep.WAITING -> Unit
+                }
+                if (now - heard > SILENCE_MS) throw AppException(ErrorCode.PC_LOST)
+                Thread.sleep(500)
+            }
+            emptyList()
+        }
+    }
+
     private fun run(context: Context, job: PcJob) {
+        if (job.type == "receive") return receive(context, job)
         val link = Env.pc()
         val items: List<Item> = when (job.type) {
             "files" -> job.kinds.map { name -> KINDS[name]?.let(Item::Files) ?: return refuse(job, name) }

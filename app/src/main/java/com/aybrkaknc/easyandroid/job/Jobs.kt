@@ -1,8 +1,11 @@
 package com.aybrkaknc.easyandroid.job
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.os.PowerManager
 import android.os.SystemClock
+import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import android.content.Intent
@@ -59,6 +62,10 @@ data class JobState(
     val seconds: Long = 0,
     /** True when what did not make it can be started again. */
     val retryable: Boolean = false,
+    /** The window of an incoming transfer was put away. */
+    val hidden: Boolean = false,
+    /** Cancelling an incoming transfer is being asked about. */
+    val askingCancel: Boolean = false,
 )
 
 /** Runs one job at a time. A failing item never stops the rest; everything is reported at the end. */
@@ -84,8 +91,13 @@ object Jobs {
         retry: ((List<T>) -> Unit)? = null,
         work: (T, Task) -> List<UiText>,
     ) {
-        if (items.isEmpty() || flow.value?.finished == false) return
         val app = context.applicationContext
+        val running = flow.value?.takeIf { !it.finished }
+        // The window of an incoming transfer can be put away, so a job can be asked for meanwhile.
+        if (running != null && jobKind(running.title) == JobKind.RECEIVE) {
+            Handler(Looper.getMainLooper()).post { Toast.makeText(app, R.string.receive_busy, Toast.LENGTH_SHORT).show() }
+        }
+        if (items.isEmpty() || running != null) return
         cancelled = false
         again = null
         val startedAt = SystemClock.elapsedRealtime()
@@ -181,7 +193,19 @@ object Jobs {
 
     fun cancel() {
         cancelled = true
-        flow.update { it?.copy(cancelling = true) }
+        flow.update { it?.copy(cancelling = true, askingCancel = false) }
+    }
+
+    fun hide() {
+        flow.update { it?.copy(hidden = true, askingCancel = false) }
+    }
+
+    fun show() {
+        flow.update { it?.copy(hidden = false) }
+    }
+
+    fun askCancel(ask: Boolean) {
+        flow.update { it?.copy(askingCancel = ask && !it.finished) }
     }
 
     fun dismiss() {
@@ -191,6 +215,7 @@ object Jobs {
     /** After these nothing that follows can work either: the PC said no, did not answer or is gone. */
     private val STOPS = setOf(
         ErrorCode.PC_MISSING, ErrorCode.PC_LOST, ErrorCode.PC_REJECTED, ErrorCode.PC_EXPIRED, ErrorCode.PC_BUSY,
+        ErrorCode.PC_STOPPED,
     )
 
     private val WARNINGS = Note.entries.map { noteId(it) }.toSet()
@@ -226,6 +251,7 @@ fun errorText(error: Throwable): UiText {
         ErrorCode.PC_FAILED -> R.string.err_pc_failed
         ErrorCode.PC_EXPIRED -> R.string.err_pc_expired
         ErrorCode.PC_BUSY -> R.string.err_pc_busy
+        ErrorCode.PC_STOPPED -> R.string.err_pc_stopped
         ErrorCode.COMMAND_FAILED, null -> R.string.err_command_failed
     }
     return UiText(id, listOf(detail))

@@ -66,11 +66,29 @@ data class PcJob(
     /** `messages`, `calls`, `wallpaper` for `files`. */
     val kinds: List<String> = emptyList(),
     val folders: List<String> = emptyList(),
+    /** For `receive`: what the PC is about to send, to which folder, and how big it is. */
+    val names: List<String> = emptyList(),
+    val target: String = "",
+    val bytes: Long = 0,
     /** The PC that asks, and what it calls itself. */
     val pc: String = "",
     val pcName: String = "",
     val format: String = PcLink.JOB_FORMAT,
     val version: Int = 1,
+)
+
+/** How far the PC is with the files it sends. */
+@Serializable
+data class PcProgress(
+    val id: String = "",
+    /** `running`, `done`, `failed` or `cancelled`. */
+    val state: String = "",
+    /** The place of the item that is being sent, and its bytes. */
+    val index: Int = 0,
+    val done: Long = 0,
+    val total: Long = 0,
+    /** Counts up while the PC is there. */
+    val beat: Long = 0,
 )
 
 /**
@@ -207,6 +225,18 @@ class PcLink(
     /** Tells the PC how the job it left is going. */
     fun reportJob(status: PcStatus) {
         write("job-status.json", JSON.encodeToString(PcStatus.serializer(), status))
+    }
+
+    /** What the PC last said about the files of the job [id], or null when it said nothing yet. */
+    fun progress(id: String): PcProgress? {
+        val text = read("job-progress.json")
+        if (text.isEmpty()) return null
+        val progress = try {
+            JSON.decodeFromString(PcProgress.serializer(), text)
+        } catch (e: SerializationException) {
+            return null
+        }
+        return progress.takeIf { it.id == id }
     }
 
     /** True when the PC asked to stop the job [id] it left. */

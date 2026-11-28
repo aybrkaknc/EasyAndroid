@@ -20,8 +20,9 @@ EasyAndroid backs up, restores and debloats apps on a rooted Android phone, with
 8. [Wireless debugging and EasyADB](#wireless-debugging-and-easyadb)
 9. [Moving backups to a PC](#moving-backups-to-a-pc)
 10. [Back up straight to a PC](#back-up-straight-to-a-pc)
-11. [Settings](#settings)
-12. [Good to know](#good-to-know)
+11. [Receiving files from a PC](#receiving-files-from-a-pc)
+12. [Settings](#settings)
+13. [Good to know](#good-to-know)
 
 ## Before you start
 
@@ -95,6 +96,14 @@ This needs EasyADB open on a PC that is connected to the phone with adb (USB or 
 * Apps that the PC holds count as saved for **Back up pending apps** and **Back up updated apps**.
 * From the PC, the **Phone data** tab of EasyADB asks this phone for messages, call logs, wallpapers and system settings and copies them over. The phone asks first, with a notification and in the app: **Reject**, **This time only** or **Trust this PC**. Without an answer within 2 minutes nothing starts. Trusted PCs are listed in Settings under **Trusted PCs**. This question only covers what EasyAndroid does; a PC that has root through adb can also read the phone by itself. If notifications are off, EasyADB opens EasyAndroid on the phone.
 * Giving root to the shell lets every PC that is paired with the phone run root commands on it. Pair only PCs you own.
+
+## Receiving files from a PC
+
+* When EasyADB sends files to this phone from its **Files** page, the phone asks first and shows the folder, the total size and the file names. Choose **Reject**, **This time only** or **Trust this PC**. After 2 minutes without an answer nothing is sent. Trusted PCs send without asking. The list of trusted PCs is the same one that backup jobs use.
+* While files arrive, a window shows the name, the place in the list, the speed and the time left. **Run in background** puts it away: a thin strip at the bottom of the app and a notification show the progress, and a tap brings the window back. No other job starts while the transfer runs.
+* **Cancel** (in the window or in the notification) asks first. A partly copied file stays on the phone.
+* At the end the window shows the result. **Open folder** appears when the folder is in the shared storage and a file app can show it.
+* The question needs EasyAndroid to be installed with root access. Without it, EasyADB sends the files directly.
 
 ## Settings
 

@@ -11,6 +11,15 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <queries>
+        <!-- A file app that can show a folder, for incoming files. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="vnd.android.document/directory" />
+        </intent>
+        <package android:name="com.android.documentsui" />
+    </queries>
+
     <application
         android:name=".App"
         android:allowBackup="false"

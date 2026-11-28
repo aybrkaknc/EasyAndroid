@@ -233,6 +233,8 @@
     <string name="about_text">GPL-3.0. Package descriptions come from Universal Android Debloater Next Generation.</string>
 
     <string name="channel_jobs">Running jobs</string>
+    <string name="channel_results">Finished jobs</string>
+    <string name="channel_problems">Jobs with problems</string>
     <string name="job_backup">Backup</string>
     <string name="job_restore">Restore</string>
     <string name="job_export">Export</string>
@@ -407,4 +409,20 @@
     <string name="job_retry">Retry the failed ones</string>
     <string name="step_absent">%1$s - none</string>
     <string name="not_tried_count">%1$d not tried</string>
+    <string name="job_receive">File transfer</string>
+    <string name="running_receive">Receiving files...</string>
+    <string name="end_receive_done">Files received</string>
+    <string name="end_receive_warning">Files received with warnings</string>
+    <string name="end_receive_incomplete">Transfer not completed</string>
+    <string name="end_receive_cancelled">Transfer cancelled</string>
+    <string name="receive_target">To %1$s · from %2$s</string>
+    <string name="receive_background">Run in background</string>
+    <string name="receive_open_folder">Open folder</string>
+    <string name="receive_busy">Files are being received. Wait until that ends.</string>
+    <string name="cancel_receive_title">Cancel the transfer?</string>
+    <string name="cancel_receive_text">It keeps running until you confirm. A partly copied file stays on the phone.</string>
+    <string name="err_pc_stopped">The PC stopped sending.</string>
+    <string name="pc_ask_send_title">%1$s wants to send files to this phone</string>
+    <string name="pc_ask_send_text">To %1$s (%2$s):</string>
+    <string name="pc_ask_send_more">and %1$d more</string>
 </resources>

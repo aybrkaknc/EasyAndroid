@@ -109,14 +109,14 @@ private fun androidx.compose.foundation.layout.ColumnScope.Ended(job: JobState) 
 }
 
 @Composable
-private fun row(result: JobResult): ResultRow {
+internal fun row(result: JobResult): ResultRow {
     val context = LocalContext.current
     return ResultRow(result.name, result.kind, result.lines.map { it.resolve(context) }, result.notTried)
 }
 
 /** The second and third headings: what the page is about, and where it goes or comes from. */
 @Composable
-private fun Subject(name: String, info: ItemInfo, position: String?) {
+internal fun Subject(name: String, info: ItemInfo, position: String?) {
     val context = LocalContext.current
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -157,7 +157,7 @@ private fun Steps(job: JobState) {
 
 /** Always two lines, so that nothing jumps; what is not known yet shows as a dash. */
 @Composable
-private fun Amount(done: Long, size: Long, lane: Lane?) {
+internal fun Amount(done: Long, size: Long, lane: Lane?) {
     Hint(
         if (size <= 0) UNKNOWN
         else stringResource(R.string.job_amount, (done * 100 / size).coerceIn(0, 100).toInt(), formatSize(done), formatSize(size)),
@@ -170,7 +170,7 @@ private fun Amount(done: Long, size: Long, lane: Lane?) {
 private const val UNKNOWN = "-"
 
 @Composable
-private fun Elapsed(startedAt: Long) {
+internal fun Elapsed(startedAt: Long) {
     var now by remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
     LaunchedEffect(Unit) {
         while (true) {
@@ -181,7 +181,7 @@ private fun Elapsed(startedAt: Long) {
     Hint(stringResource(R.string.job_elapsed, clock((now - startedAt) / 1000)))
 }
 
-private fun clock(seconds: Long): String {
+internal fun clock(seconds: Long): String {
     val s = seconds.coerceAtLeast(0)
     return String.format(Locale.ROOT, "%d:%02d", s / 60, s % 60)
 }

@@ -14,6 +14,8 @@ data class ItemInfo(
     val parts: List<Stage> = emptyList(),
     /** True when the PC does the work, so only it knows which parts it came across. */
     val remote: Boolean = false,
+    /** The folder that incoming files go to. */
+    val folder: String? = null,
 )
 
 enum class StepState { DONE, RUNNING, WAITING, ABSENT }
